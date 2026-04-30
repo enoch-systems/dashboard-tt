@@ -1,30 +1,49 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { mockPaymentRequests, PaymentRequest } from "@/data/paymentRequests";
+import { PaymentReceiptData, fetchPaymentReceipts, updatePaymentReceiptStatus } from "@/lib/paymentReceiptService";
 import { useNotifications } from "@/context/NotificationContext";
 
 export function PaymentChecker() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRequest, setSelectedRequest] = useState<PaymentRequest | null>(null);
+  const [paymentReceipts, setPaymentReceipts] = useState<PaymentReceiptData[]>([]);
+  const [selectedRequest, setSelectedRequest] = useState<PaymentReceiptData | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [dateFilter, setDateFilter] = useState("default");
+  const [loading, setLoading] = useState(true);
   const { viewedRequests, markAsViewed } = useNotifications();
   const itemsPerPage = 20;
 
-  const filteredRequests = mockPaymentRequests.filter(
+  // Fetch payment receipts from Supabase
+  useEffect(() => {
+    const fetchReceipts = async () => {
+      setLoading(true);
+      try {
+        const receipts = await fetchPaymentReceipts(undefined, 100); // Fetch more for pagination
+        setPaymentReceipts(receipts);
+      } catch (error) {
+        console.error('Error fetching payment receipts:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReceipts();
+  }, []);
+
+  const filteredRequests = paymentReceipts.filter(
     (request) =>
-      request.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.phone.includes(searchTerm)
+      (request.phone && request.phone.includes(searchTerm))
   );
 
   // Sort by date/time
   const sortedRequests = [...filteredRequests].sort((a, b) => {
     if (dateFilter === "newest") {
-      return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime();
+      return new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime();
     } else if (dateFilter === "oldest") {
-      return new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
+      return new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime();
     }
     return 0; // default - no sorting
   });
@@ -57,17 +76,22 @@ export function PaymentChecker() {
     setCurrentPage(1);
   }, [searchTerm, dateFilter]);
 
-  const handleStatusChange = (requestId: number, newStatus: 'pending' | 'approved' | 'rejected') => {
-    // This will be connected to an API to update the status
-    console.log(`Updating request ${requestId} to ${newStatus}`);
-    // For now, just log it - you'll implement the actual API call later
+  const handleStatusChange = async (requestId: string, newStatus: 'approved' | 'rejected') => {
+    const success = await updatePaymentReceiptStatus(requestId, newStatus);
+    if (success) {
+      // Refresh the data
+      const receipts = await fetchPaymentReceipts(undefined, 100);
+      setPaymentReceipts(receipts);
+    }
   };
 
-  const handleImageClick = (request: PaymentRequest) => {
+  const handleImageClick = async (request: PaymentReceiptData) => {
     setSelectedRequest(request);
     setShowImageModal(true);
-    // Mark this request as viewed using shared context
-    markAsViewed(request.id);
+    // Mark this request as viewed using shared context (now async)
+    await markAsViewed(parseInt(request.id));
+    // Force a re-render by updating state
+    setPaymentReceipts(prev => [...prev]);
   };
 
   const getStatusColor = (status: string) => {
@@ -83,18 +107,18 @@ export function PaymentChecker() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl text-gray-900 dark:text-white mb-2">Payment Checker</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl text-gray-900 dark:text-white mb-2">Payment Checker</h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             Review and manage payment proof submissions
           </p>
         </div>
 
         {/* Search Bar */}
-        <div className="mb-6 flex items-center gap-4">
-          <div className="relative max-w-md flex-1">
+        <div className="mb-6 flex flex-col sm:flex-row items-center gap-4">
+          <div className="relative w-full sm:max-w-md flex-1">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg
                 className="h-5 w-5 text-gray-400"
@@ -118,11 +142,11 @@ export function PaymentChecker() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
             >
               <option value="default">Default</option>
               <option value="newest">Newest First</option>
@@ -137,34 +161,34 @@ export function PaymentChecker() {
             {currentRequests.map((request, index) => (
               <div
                 key={request.id}
-                className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
+                className="p-4 sm:p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start flex-1">
-                    <div className="w-8 text-sm text-gray-900 dark:text-gray-200 font-medium mt-1">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-start flex-1 w-full sm:w-auto">
+                    <div className="w-8 text-sm text-gray-900 dark:text-gray-200 font-medium mt-1 flex-shrink-0">
                       {indexOfFirstRequest + index + 1}
                     </div>
-                    <div className="ml-4 flex-1">
-                      <div className="text-base font-medium text-gray-900 dark:text-white mb-2">
-                        {request.name}
+                    <div className="ml-4 flex-1 min-w-0">
+                      <div className="text-sm sm:text-base font-medium text-gray-900 dark:text-white mb-2 truncate">
+                        {request.student_name}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                      <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 truncate">
                         {request.email}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">
                         Phone: {request.phone}
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2 ml-4">
-                    {!viewedRequests.has(request.id) && (
-                      <div className="text-amber-600 dark:text-amber-400 text-xs font-medium animate-bounce sticky -top-1">
+                  <div className="flex flex-col gap-2 w-full sm:w-auto">
+                    {!viewedRequests.has(parseInt(request.id)) && (
+                      <div className="text-amber-600 dark:text-amber-400 text-xs font-medium animate-bounce text-center sm:text-left">
                         New message!
                       </div>
                     )}
                     <button
                       onClick={() => handleImageClick(request)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
+                      className="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
                     >
                       View Proof
                     </button>
@@ -201,11 +225,11 @@ export function PaymentChecker() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700 mt-4">
-            <div className="text-sm text-gray-700 dark:text-gray-300">
+          <div className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-4 border-t border-gray-200 dark:border-gray-700 mt-4 gap-4">
+            <div className="text-sm text-gray-700 dark:text-gray-300 text-center sm:text-left">
               Showing {indexOfFirstRequest + 1} to {Math.min(indexOfLastRequest, filteredRequests.length)} of {filteredRequests.length} requests
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap justify-center">
               <button
                 onClick={handlePrevPage}
                 disabled={currentPage === 1}
@@ -217,7 +241,7 @@ export function PaymentChecker() {
                 <button
                   key={pageNumber}
                   onClick={() => handlePageChange(pageNumber)}
-                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors duration-200 ${
+                  className={`px-2 sm:px-3 py-1 text-sm font-medium rounded-md transition-colors duration-200 ${
                     currentPage === pageNumber
                       ? 'bg-blue-600 text-white hover:bg-blue-700'
                       : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -246,7 +270,7 @@ export function PaymentChecker() {
             <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Payment Proof - {selectedRequest.name}
+                  Payment Proof - {selectedRequest.student_name}
                 </h3>
                 <button
                   onClick={() => setShowImageModal(false)}
@@ -259,18 +283,18 @@ export function PaymentChecker() {
               </div>
               
               <div className="mb-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Amount:</span>
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white">¥{selectedRequest.amount.toLocaleString()}</span>
+                    <span className="ml-2 font-medium text-gray-900 dark:text-white">₦{selectedRequest.amount.toLocaleString()}</span>
                   </div>
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Payment Date:</span>
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white">{selectedRequest.paymentDate}</span>
+                    <span className="ml-2 font-medium text-gray-900 dark:text-white">{selectedRequest.payment_date}</span>
                   </div>
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Email:</span>
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white">{selectedRequest.email}</span>
+                    <span className="ml-2 font-medium text-gray-900 dark:text-white break-all">{selectedRequest.email}</span>
                   </div>
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Phone:</span>
@@ -278,34 +302,55 @@ export function PaymentChecker() {
                   </div>
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Submitted:</span>
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white">{selectedRequest.submittedAt}</span>
+                    <span className="ml-2 font-medium text-gray-900 dark:text-white">{selectedRequest.submitted_at}</span>
                   </div>
                 </div>
               </div>
 
               <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 flex items-center justify-center min-h-[400px]">
-                {/* This will display the actual uploaded image */}
-                <div className="text-center">
-                  <svg
-                    className="mx-auto h-16 w-16 text-gray-400 dark:text-gray-500 mb-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">
-                    Payment proof image will be displayed here
-                  </p>
-                  <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">
-                    Image URL: {selectedRequest.imageUrl}
-                  </p>
-                </div>
+                {/* Display the actual uploaded image from Cloudinary */}
+                {selectedRequest.cloudinary_url ? (
+                  <img 
+                    src={selectedRequest.cloudinary_url}
+                    alt="Payment Proof"
+                    className="max-w-full max-h-[500px] rounded-lg shadow-lg object-contain"
+                  />
+                ) : (
+                  <div className="text-center">
+                    <svg
+                      className="mx-auto h-16 w-16 text-gray-400 dark:text-gray-500 mb-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">
+                      No image available
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => handleStatusChange(selectedRequest.id, 'approved')}
+                  className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200"
+                >
+                  Approve Payment
+                </button>
+                <button
+                  onClick={() => handleStatusChange(selectedRequest.id, 'rejected')}
+                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200"
+                >
+                  Reject Payment
+                </button>
               </div>
 
                           </div>

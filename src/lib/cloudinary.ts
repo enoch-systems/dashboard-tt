@@ -2,9 +2,9 @@ import { v2 as cloudinary } from 'cloudinary';
 
 // Configure Cloudinary
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'deafv5ovi',
+  api_key: process.env.CLOUDINARY_API_KEY || '154519651234136',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'LWpWFH8T3YzO7uuiWWiQSjI_cmY',
   secure: true,
 });
 
@@ -51,4 +51,41 @@ export function getBootcampBannerImageUrl() {
     quality: 85,
     format: 'webp'
   });
+}
+
+// Upload image to Cloudinary
+export async function uploadImageToCloudinary(file: File, folder: string = 'payment-receipts') {
+  try {
+    const buffer = await file.arrayBuffer();
+    const base64String = Buffer.from(buffer).toString('base64');
+    const dataURI = `data:${file.type};base64,${base64String}`;
+
+    const result = await cloudinary.uploader.upload(dataURI, {
+      folder,
+      resource_type: 'image',
+      format: 'webp',
+      quality: 'auto:good',
+      fetch_format: 'auto'
+    });
+
+    return {
+      publicId: result.public_id,
+      url: result.secure_url,
+      originalFilename: file.name
+    };
+  } catch (error) {
+    console.error('Error uploading to Cloudinary:', error);
+    throw error;
+  }
+}
+
+// Delete image from Cloudinary
+export async function deleteImageFromCloudinary(publicId: string) {
+  try {
+    await cloudinary.uploader.destroy(publicId);
+    return true;
+  } catch (error) {
+    console.error('Error deleting from Cloudinary:', error);
+    return false;
+  }
 }

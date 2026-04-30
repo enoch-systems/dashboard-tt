@@ -28,21 +28,13 @@ export function ConfirmEmailType({
         title: "Welcome Email",
         description: "Send welcome message to new student"
       },
-      payment_reminder: {
-        title: "Payment Reminder Email (Unpaid)",
-        description: "Remind student about unpaid fees"
+      payment_confirmation: {
+        title: "Payment Confirmation Email",
+        description: "Confirm payment received from student"
       },
-      installment: {
-        title: "Installment Email",
-        description: "Send installment payment information"
-      },
-      full_payment: {
-        title: "Full Payment Confirmation Email",
-        description: "Confirm full payment completion"
-      },
-      resumption: {
-        title: "Resumption Email",
-        description: "Send resumption/class continuation notice"
+      group_redirection: {
+        title: "Group Redirection Email",
+        description: "Send WhatsApp group invitation to student"
       }
     };
 

@@ -218,8 +218,8 @@ export function StudentDatabaseTable() {
 
         {/* Search Bar */}
         <div className="mb-6 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto flex items-center gap-4">
-            <div className="relative max-w-md sm:max-w-lg lg:max-w-xl flex-1">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center gap-4">
+            <div className="relative w-full sm:max-w-lg lg:max-w-xl">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg
                   className="h-5 w-5 text-gray-400"
@@ -243,11 +243,11 @@ export function StudentDatabaseTable() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <select
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
-                className="px-4 py-3 sm:py-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white text-sm sm:text-base"
+                className="w-full px-4 py-3 sm:py-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white text-sm sm:text-base"
               >
                 <option value="default">Default</option>
                 <option value="newest">Newest First</option>
@@ -281,20 +281,20 @@ export function StudentDatabaseTable() {
         {!loading && !error && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Table Header */}
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <div className="text-gray-600 dark:text-gray-400 flex items-center gap-4 flex-wrap">
-              Total students: <span className="font-semibold text-gray-900 dark:text-white">{filteredStudents.length}</span>
-              <span className="text-gray-400">|</span>
-              Male: <span className="font-semibold text-blue-600 dark:text-blue-400">{genderStats.male}</span>
-              <span className="text-gray-400">|</span>
-              Female: <span className="font-semibold text-pink-600 dark:text-pink-400">{genderStats.female}</span>
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="text-gray-600 dark:text-gray-400 flex items-center gap-2 sm:gap-4 flex-wrap text-sm">
+              <span>Total: <span className="font-semibold text-gray-900 dark:text-white">{filteredStudents.length}</span></span>
+              <span className="text-gray-400 hidden sm:inline">|</span>
+              <span className="hidden sm:inline">Male: <span className="font-semibold text-blue-600 dark:text-blue-400">{genderStats.male}</span></span>
+              <span className="text-gray-400 hidden sm:inline">|</span>
+              <span className="hidden sm:inline">Female: <span className="font-semibold text-pink-600 dark:text-pink-400">{genderStats.female}</span></span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               {/* Payment Status Dropdown */}
-              <div className="relative" ref={paymentDropdownRef}>
+              <div className="relative w-full sm:w-auto" ref={paymentDropdownRef}>
                 <button
                   onClick={() => setPaymentDropdownOpen(!paymentDropdownOpen)}
-                  className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300 rounded-md transition-colors duration-200 text-sm font-medium flex items-center gap-1"
+                  className="w-full sm:w-auto px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300 rounded-md transition-colors duration-200 text-sm font-medium flex items-center justify-center gap-1"
                 >
                   Payment Status
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -372,37 +372,37 @@ export function StudentDatabaseTable() {
 
           {/* Table */}
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[800px]">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     NO.
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     STUDENT
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">
                     CONTACT
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">
                     COURSE
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">
                     REG. DATE
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     PAYMENT PLAN
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">
                     AMOUNT PAID
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">
                     BALANCE REMAINING
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">
                     EDIT PLAN
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     ACTIONS
                   </th>
                 </tr>
@@ -410,10 +410,10 @@ export function StudentDatabaseTable() {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {currentStudents.map((student, index) => (
                   <tr key={student.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                       {indexOfFirstStudent + index + 1}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {student.name}
                       </div>
@@ -421,13 +421,13 @@ export function StudentDatabaseTable() {
                         {student.email}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 hidden md:table-cell">
                       {student.phone}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 hidden lg:table-cell">
                       {student.course}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                       <div className="text-sm text-gray-900 dark:text-gray-200">
                         {student.regDate}
                       </div>
@@ -435,12 +435,12 @@ export function StudentDatabaseTable() {
                         {student.regTime}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                       <div className="relative" ref={setPaymentPlanDropdownRef(student.id)}>
                         <button
                           onClick={() => lockedPaymentPlans[student.id] ? null : setOpenPaymentPlanDropdown(openPaymentPlanDropdown === student.id ? null : student.id)}
                           disabled={lockedPaymentPlans[student.id]}
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold items-center gap-1 relative ${
+                          className={`inline-flex rounded-full px-2 sm:px-3 py-1 text-xs font-semibold items-center gap-1 relative ${
                             getStudentPaymentPlan(student.originalId) === "Fully Paid"
                               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
                               : getStudentPaymentPlan(student.originalId) === "1st installment"
@@ -455,7 +455,7 @@ export function StudentDatabaseTable() {
                           {getStudentPaymentPlan(student.originalId)}
                           {getStudentPaymentPlan(student.originalId) === "Select a plan" && (
                             <svg 
-                              className={`w-4 h-4 ml-2 transition-transform duration-200 ${
+                              className={`w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2 transition-transform duration-200 ${
                                 openPaymentPlanDropdown === student.id ? 'rotate-180' : ''
                               }`} 
                               fill="none" 
@@ -467,7 +467,7 @@ export function StudentDatabaseTable() {
                           )}
                           {editedPaymentPlans[student.id] && (
                             <svg 
-                              className="w-4 h-4 ml-1 text-red-500 animate-bounce"
+                              className="w-3 h-3 sm:w-4 sm:h-4 ml-1 text-red-500 animate-bounce"
                               fill="none" 
                               stroke="currentColor" 
                               viewBox="0 0 24 24"
@@ -509,7 +509,7 @@ export function StudentDatabaseTable() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-200">
+                    <td className="px-4 sm:px-6 py-4 text-sm text-gray-900 dark:text-gray-200 hidden md:table-cell">
                       {(() => {
                         const plan = getStudentPaymentPlan(student.originalId);
                         if (plan === "Fully Paid") return "50,000";
@@ -523,7 +523,7 @@ export function StudentDatabaseTable() {
                         return "N/A";
                       })()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 hidden lg:table-cell">
                       {(() => {
                         const plan = getStudentPaymentPlan(student.originalId);
                         if (plan === "Fully Paid") return "0";
@@ -532,7 +532,7 @@ export function StudentDatabaseTable() {
                         return "N/A";
                       })()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 hidden sm:table-cell">
                       <button 
                         onClick={() => handleEditClick(student.id)}
                         className={`${
@@ -546,13 +546,13 @@ export function StudentDatabaseTable() {
                         </svg>
                       </button>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                       <button 
                         onClick={() => {
                           setSelectedStudentId(student.id);
                           setShowStudentDetailModal(true);
                         }}
-                        className="px-3 py-1 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 border border-blue-600 hover:border-blue-700 dark:border-blue-400 dark:hover:border-blue-300 rounded transition-colors duration-200"
+                        className="px-2 sm:px-3 py-1 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 border border-blue-600 hover:border-blue-700 dark:border-blue-400 dark:hover:border-blue-300 rounded transition-colors duration-200"
                       >
                         View Detail
                       </button>
@@ -589,11 +589,11 @@ export function StudentDatabaseTable() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="text-sm text-gray-700 dark:text-gray-300">
+            <div className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-4 border-t border-gray-200 dark:border-gray-700 gap-4">
+              <div className="text-sm text-gray-700 dark:text-gray-300 text-center sm:text-left">
                 Showing {indexOfFirstStudent + 1} to {Math.min(indexOfLastStudent, filteredStudents.length)} of {filteredStudents.length} students
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap justify-center">
                 <button
                   onClick={handlePrevPage}
                   disabled={currentPage === 1}
@@ -605,7 +605,7 @@ export function StudentDatabaseTable() {
                   <button
                     key={pageNumber}
                     onClick={() => handlePageChange(pageNumber)}
-                    className={`px-3 py-1 text-sm font-medium rounded-md transition-colors duration-200 ${
+                    className={`px-2 sm:px-3 py-1 text-sm font-medium rounded-md transition-colors duration-200 ${
                       currentPage === pageNumber
                         ? 'bg-blue-600 text-white hover:bg-blue-700'
                         : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'

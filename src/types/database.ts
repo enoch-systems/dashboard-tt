@@ -281,6 +281,62 @@ export interface Database {
           updated_at?: string
         }
       }
+      payment_receipts: {
+        Row: {
+          id: string
+          student_name: string
+          email: string
+          phone?: string
+          amount: number
+          payment_date: string
+          payment_type: string
+          status: string
+          cloudinary_public_id?: string
+          cloudinary_url?: string
+          original_filename?: string
+          submitted_at: string
+          reviewed_at?: string
+          reviewed_by?: string
+          notes?: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          student_name: string
+          email: string
+          phone?: string
+          amount: number
+          payment_date: string
+          payment_type?: string
+          status?: string
+          cloudinary_public_id?: string
+          cloudinary_url?: string
+          original_filename?: string
+          submitted_at?: string
+          reviewed_at?: string
+          reviewed_by?: string
+          notes?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          student_name?: string
+          email?: string
+          phone?: string
+          amount?: number
+          payment_date?: string
+          payment_type?: string
+          status?: string
+          cloudinary_public_id?: string
+          cloudinary_url?: string
+          original_filename?: string
+          reviewed_at?: string
+          reviewed_by?: string
+          notes?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -303,6 +359,7 @@ export type SocialLink = Database['public']['Tables']['social_links']['Row']
 export type Student = Database['public']['Tables']['students']['Row']
 export type EmailFollowup = Database['public']['Tables']['email_followups']['Row']
 export type PaymentRequest = Database['public']['Tables']['payment_requests']['Row']
+export type PaymentReceipt = Database['public']['Tables']['payment_receipts']['Row']
 
 export type UserProfileInsert = Database['public']['Tables']['user_profiles']['Insert']
 export type UserProfileUpdate = Database['public']['Tables']['user_profiles']['Update']
@@ -314,6 +371,8 @@ export type EmailFollowupInsert = Database['public']['Tables']['email_followups'
 export type EmailFollowupUpdate = Database['public']['Tables']['email_followups']['Update']
 export type PaymentRequestInsert = Database['public']['Tables']['payment_requests']['Insert']
 export type PaymentRequestUpdate = Database['public']['Tables']['payment_requests']['Update']
+export type PaymentReceiptInsert = Database['public']['Tables']['payment_receipts']['Insert']
+export type PaymentReceiptUpdate = Database['public']['Tables']['payment_receipts']['Update']
 
 // Extended types for application use
 export interface UserWithProfile extends User {

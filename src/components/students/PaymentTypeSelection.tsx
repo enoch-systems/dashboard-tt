@@ -1,36 +1,33 @@
 "use client";
 import React from "react";
 
-interface SelectEmailTypeProps {
+interface PaymentTypeSelectionProps {
   isOpen: boolean;
   onClose: () => void;
-  onEmailTypeSelect: (type: string) => void;
+  onPaymentTypeSelect: (type: string) => void;
   studentName?: string;
-  studentEmail?: string;
 }
 
-export function SelectEmailType({ isOpen, onClose, onEmailTypeSelect, studentName, studentEmail }: SelectEmailTypeProps) {
+export function PaymentTypeSelection({ isOpen, onClose, onPaymentTypeSelect, studentName }: PaymentTypeSelectionProps) {
   if (!isOpen) return null;
 
-  const emailTypes = [
+  const paymentTypes = [
     {
-      id: "welcome",
-      name: "Welcome Email"
+      id: "Fully Paid",
+      name: "Fully Paid",
+      description: "Complete payment - N50,000"
     },
     {
-      id: "payment_confirmation",
-      name: "Payment Confirmation Email"
+      id: "1st Installment",
+      name: "1st Installment",
+      description: "First installment - N30,000"
     },
     {
-      id: "group_redirection",
-      name: "Group Redirection Email"
+      id: "2nd Installment",
+      name: "2nd Installment",
+      description: "Second installment - N20,000"
     }
   ];
-
-  const handleEmailTypeSelect = (type: string) => {
-    onEmailTypeSelect(type);
-    onClose();
-  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -42,19 +39,16 @@ export function SelectEmailType({ isOpen, onClose, onEmailTypeSelect, studentNam
         ></div>
         
         {/* Modal */}
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full p-6">
+        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Select Email Type
+                Select Payment Type
               </h3>
               {studentName && (
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Sending to: <span className="font-medium">{studentName}</span>
-                  {studentEmail && (
-                    <span className="text-gray-500"> ({studentEmail})</span>
-                  )}
+                  For: <span className="font-medium">{studentName}</span>
                 </p>
               )}
             </div>
@@ -68,15 +62,20 @@ export function SelectEmailType({ isOpen, onClose, onEmailTypeSelect, studentNam
             </button>
           </div>
 
-          {/* Email Type List */}
+          {/* Payment Type List */}
           <div className="space-y-2 mb-6">
-            {emailTypes.map((emailType) => (
+            {paymentTypes.map((paymentType) => (
               <button
-                key={emailType.id}
-                onClick={() => handleEmailTypeSelect(emailType.id)}
-                className="w-full text-left px-4 py-3 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-gray-900 dark:text-white"
+                key={paymentType.id}
+                onClick={() => onPaymentTypeSelect(paymentType.id)}
+                className="w-full text-left px-4 py-4 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 rounded-lg"
               >
-                {emailType.name}
+                <div className="font-medium text-gray-900 dark:text-white mb-1">
+                  {paymentType.name}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {paymentType.description}
+                </div>
               </button>
             ))}
           </div>

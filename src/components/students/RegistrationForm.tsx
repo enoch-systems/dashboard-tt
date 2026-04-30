@@ -92,19 +92,19 @@ export function RegistrationForm() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-3xl text-gray-900 dark:text-white mb-2">Tech Trailblazer Scholarship Registration</h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <h1 className="text-2xl sm:text-3xl text-gray-900 dark:text-white mb-2">Tech Trailblazer Scholarship Registration</h1>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 Register for the Tech Trailblazer Scholarship program
               </p>
             </div>
             <button
               onClick={() => window.history.back()}
-              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors duration-200"
+              className="w-full sm:w-auto px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors duration-200"
             >
               Exit Page
             </button>
@@ -113,9 +113,9 @@ export function RegistrationForm() {
 
         <div className="max-w-4xl mx-auto">
           {/* Registration Form */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {/* Full Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
