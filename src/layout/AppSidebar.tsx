@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState,useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
+import { useAuth } from "../context/AuthContext";
 import {
   ChevronDownIcon,
   GridIcon,
@@ -40,6 +41,7 @@ const othersItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -272,29 +274,31 @@ const AppSidebar: React.FC = () => {
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div
-        className={`py-8 flex  ${
-          !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-        }`}
-      >
-        <Link href="/">
-          {isExpanded || isHovered || isMobileOpen ? (
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-                <span className="text-white font-bold text-lg">TT</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-white">Academy</span>
-            </div>
-          ) : (
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-              <span className="text-white font-bold text-sm">TT</span>
-            </div>
-          )}
-        </Link>
-      </div>
-      <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
-        <nav className="mb-6">
-          <div className="flex flex-col gap-4">
+      {user && (
+        <>
+          <div
+            className={`py-8 flex  ${
+              !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+            }`}
+          >
+            <Link href="/">
+              {isExpanded || isHovered || isMobileOpen ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+                    <span className="text-white font-bold text-lg">TT</span>
+                  </div>
+                  <span className="text-xl font-bold text-gray-900 dark:text-white">Academy</span>
+                </div>
+              ) : (
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+                  <span className="text-white font-bold text-sm">TT</span>
+                </div>
+              )}
+            </Link>
+          </div>
+          <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
+            <nav className="mb-6">
+              <div className="flex flex-col gap-4">
             <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
@@ -333,6 +337,8 @@ const AppSidebar: React.FC = () => {
           </div>
         </nav>
       </div>
+        </>
+      )}
     </aside>
   );
 };
