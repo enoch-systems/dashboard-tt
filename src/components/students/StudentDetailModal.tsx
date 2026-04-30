@@ -1,6 +1,6 @@
 "use client";
-import React from "react";
-import { mockStudents } from "@/data/students";
+import React, { useState, useEffect } from "react";
+import { getStudentById, type Student } from "@/data/students";
 
 interface StudentDetailModalProps {
   isOpen: boolean;
@@ -9,9 +9,39 @@ interface StudentDetailModalProps {
 }
 
 export function StudentDetailModal({ isOpen, onClose, studentId }: StudentDetailModalProps) {
-  const student = mockStudents.find((s) => s.id === studentId);
+  const [student, setStudent] = useState<Student | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  if (!isOpen || !student) return null;
+  useEffect(() => {
+    if (isOpen && studentId) {
+      const loadStudent = async () => {
+        try {
+          setLoading(true);
+          const data = await getStudentById(studentId.toString());
+          setStudent(data);
+        } catch (err) {
+          console.error('Error loading student:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadStudent();
+    }
+  }, [isOpen, studentId]);
+
+  if (!isOpen) return null;
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex min-h-screen items-center justify-center p-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!student) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">

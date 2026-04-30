@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { mockStudents, Student } from "@/data/students";
+import React, { useState, useEffect } from "react";
+import { fetchStudents, Student } from "@/data/students";
 import { SelectEmailType } from "./SelectEmailType";
 import { ConfirmEmailType } from "./ConfirmEmailType";
 
@@ -12,13 +12,42 @@ export function EmailPage() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [dateFilter, setDateFilter] = useState("default");
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 20;
 
-  const filteredStudents = mockStudents.filter(
+  useEffect(() => {
+    const loadStudents = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchStudents();
+        setStudents(data);
+      } catch (err) {
+        console.error('Error loading students:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadStudents();
+  }, []);
+
+  const filteredStudents = students.filter(
     (student) =>
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        <div className="p-6">
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Sort by date/time
   const sortedStudents = [...filteredStudents].sort((a, b) => {

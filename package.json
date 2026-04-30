@@ -23,6 +23,7 @@
     "apexcharts": "^4.7.0",
     "autoprefixer": "^10.4.22",
     "cloudinary": "^2.10.0",
+    "dotenv": "^17.4.2",
     "flatpickr": "^4.6.13",
     "lucide-react": "^1.14.0",
     "next": "^16.1.6",

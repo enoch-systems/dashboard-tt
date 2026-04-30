@@ -1,11 +1,14 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { mockStudents } from "@/data/students";
+import { fetchStudents, type Student } from "@/data/students";
 import { StudentDetailModal } from "./StudentDetailModal";
 import { usePaymentPlan, PaymentPlan } from "@/context/PaymentPlanContext";
 
 export function StudentDatabaseTable() {
   const { updateStudentPaymentPlan, getStudentPaymentPlan } = usePaymentPlan();
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [paymentDropdownOpen, setPaymentDropdownOpen] = useState(false);
   const [selectedPaymentFilter, setSelectedPaymentFilter] = useState<string>("All Students");
@@ -14,6 +17,7 @@ export function StudentDatabaseTable() {
   const [editingStudentId, setEditingStudentId] = useState<number | null>(null);
   const [showEditConfirmModal, setShowEditConfirmModal] = useState(false);
   const [editedPaymentPlans, setEditedPaymentPlans] = useState<{ [key: number]: number }>({});
+  const [editMessage, setEditMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showStudentDetailModal, setShowStudentDetailModal] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -21,6 +25,25 @@ export function StudentDatabaseTable() {
   const itemsPerPage = 20;
   const paymentDropdownRef = useRef<HTMLDivElement>(null);
   const paymentPlanDropdownRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+
+  // Fetch students from Supabase
+  useEffect(() => {
+    const loadStudents = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await fetchStudents();
+        setStudents(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load students');
+        console.error('Error loading students:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    loadStudents();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -36,6 +59,7 @@ export function StudentDatabaseTable() {
     };
   }, [paymentDropdownRef, paymentDropdownOpen]);
 
+  // Auto-clear edited payment plans after 4 seconds
   useEffect(() => {
     const timer = setInterval(() => {
       const now = Date.now();
@@ -46,19 +70,43 @@ export function StudentDatabaseTable() {
         return filtered;
       });
     }, 1000);
-
+  
     return () => clearInterval(timer);
   }, []);
+
+  // Auto-clear edit messages after 3 seconds
+  useEffect(() => {
+    if (editMessage) {
+      const timer = setTimeout(() => {
+        setEditMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [editMessage]);
 
   const setPaymentPlanDropdownRef = useCallback((studentId: number) => (el: HTMLDivElement | null) => {
     paymentPlanDropdownRefs.current[studentId] = el;
   }, []);
 
-  const handlePaymentPlanChange = (studentId: number, plan: PaymentPlan) => {
-    updateStudentPaymentPlan(studentId, plan);
-    // Only lock if a real payment plan is selected (not "Select a plan")
-    if (plan !== "Select a plan") {
-      setLockedPaymentPlans(prev => ({ ...prev, [studentId]: true }));
+  const handlePaymentPlanChange = async (studentId: number, plan: PaymentPlan) => {
+    const student = students.find(s => s.id === studentId);
+    if (student) {
+      if (plan === "Select a plan") {
+        setEditMessage({ type: 'error', text: 'Please select a valid payment plan' });
+        return;
+      }
+
+      try {
+        const success = await updateStudentPaymentPlan(student.originalId, plan);
+        if (success) {
+          setEditMessage({ type: 'success', text: `Payment plan updated to "${plan}" for ${student.name}` });
+          setLockedPaymentPlans(prev => ({ ...prev, [studentId]: true }));
+        } else {
+          setEditMessage({ type: 'error', text: 'Failed to update payment plan. Please try again.' });
+        }
+      } catch (error) {
+        setEditMessage({ type: 'error', text: 'Error updating payment plan. Please try again.' });
+      }
     }
     setOpenPaymentPlanDropdown(null);
   };
@@ -86,7 +134,7 @@ export function StudentDatabaseTable() {
     setEditingStudentId(null);
   };
 
-  const filteredStudents = mockStudents.filter(
+  const filteredStudents = students.filter(
     (student) => {
       const matchesSearch = 
         student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -95,7 +143,7 @@ export function StudentDatabaseTable() {
       
       const matchesPaymentFilter = 
         selectedPaymentFilter === "All Students" ||
-        getStudentPaymentPlan(student.id) === selectedPaymentFilter;
+        getStudentPaymentPlan(student.originalId) === selectedPaymentFilter;
       
       return matchesSearch && matchesPaymentFilter;
     }
@@ -209,7 +257,28 @@ export function StudentDatabaseTable() {
           </div>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-gray-600 dark:text-gray-400">Loading students...</span>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className="mx-4 sm:mx-6 lg:mx-8 mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <div className="flex items-center">
+              <svg className="h-5 w-5 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-red-700 dark:text-red-400">{error}</span>
+            </div>
+          </div>
+        )}
+
         {/* Table */}
+        {!loading && !error && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Table Header */}
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
@@ -278,6 +347,28 @@ export function StudentDatabaseTable() {
               </div>
             </div>
           </div>
+
+          {/* Edit Message Display */}
+          {editMessage && (
+            <div className={`mb-4 p-4 rounded-md ${
+              editMessage.type === 'success' 
+                ? 'bg-green-50 border border-green-200 text-green-800 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400'
+                : 'bg-red-50 border border-red-200 text-red-800 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400'
+            }`}>
+              <div className="flex items-center">
+                {editMessage.type === 'success' ? (
+                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                )}
+                <span className="font-medium">{editMessage.text}</span>
+              </div>
+            </div>
+          )}
 
           {/* Table */}
           <div className="overflow-x-auto">
@@ -350,19 +441,19 @@ export function StudentDatabaseTable() {
                           onClick={() => lockedPaymentPlans[student.id] ? null : setOpenPaymentPlanDropdown(openPaymentPlanDropdown === student.id ? null : student.id)}
                           disabled={lockedPaymentPlans[student.id]}
                           className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold items-center gap-1 relative ${
-                            getStudentPaymentPlan(student.id) === "Fully Paid"
+                            getStudentPaymentPlan(student.originalId) === "Fully Paid"
                               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                              : getStudentPaymentPlan(student.id) === "1st installment"
+                              : getStudentPaymentPlan(student.originalId) === "1st installment"
                               ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
-                              : getStudentPaymentPlan(student.id) === "2nd installment"
+                              : getStudentPaymentPlan(student.originalId) === "2nd installment"
                               ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
                               : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
                           } ${lockedPaymentPlans[student.id] ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'} transition-opacity duration-200 ${
                             editedPaymentPlans[student.id] ? 'animate-pulse border-2 border-red-500' : ''
                           }`}
                         >
-                          {getStudentPaymentPlan(student.id)}
-                          {getStudentPaymentPlan(student.id) === "Select a plan" && (
+                          {getStudentPaymentPlan(student.originalId)}
+                          {getStudentPaymentPlan(student.originalId) === "Select a plan" && (
                             <svg 
                               className={`w-4 h-4 ml-2 transition-transform duration-200 ${
                                 openPaymentPlanDropdown === student.id ? 'rotate-180' : ''
@@ -420,7 +511,7 @@ export function StudentDatabaseTable() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-200">
                       {(() => {
-                        const plan = getStudentPaymentPlan(student.id);
+                        const plan = getStudentPaymentPlan(student.originalId);
                         if (plan === "Fully Paid") return "50,000";
                         if (plan === "1st installment") return "30,000";
                         if (plan === "2nd installment") return (
@@ -434,7 +525,7 @@ export function StudentDatabaseTable() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                       {(() => {
-                        const plan = getStudentPaymentPlan(student.id);
+                        const plan = getStudentPaymentPlan(student.originalId);
                         if (plan === "Fully Paid") return "0";
                         if (plan === "1st installment") return "20,000";
                         if (plan === "2nd installment") return "0";
@@ -443,11 +534,11 @@ export function StudentDatabaseTable() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                       <button 
-                        onClick={() => lockedPaymentPlans[student.id] ? handleEditClick(student.id) : null}
+                        onClick={() => handleEditClick(student.id)}
                         className={`${
                           lockedPaymentPlans[student.id] 
                             ? 'text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300' 
-                            : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
+                            : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer'
                         } transition-colors duration-200`}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -495,7 +586,6 @@ export function StudentDatabaseTable() {
               </div>
             </div>
           )}
-          </div>
 
           {/* Pagination */}
           {totalPages > 1 && (
@@ -534,53 +624,55 @@ export function StudentDatabaseTable() {
               </div>
             </div>
           )}
+        </div>
+      )}
 
-        {/* Edit Confirmation Modal */}
-        {showEditConfirmModal && (
-          <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex min-h-screen items-center justify-center p-4">
-              <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={cancelEdit}></div>
-              <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Edit Payment Plan
-                  </h3>
-                  <button
-                    onClick={cancelEdit}
-                    className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Are you sure you want to edit the payment plan for this student? This will unlock the payment plan selection for modification.
-                  </p>
-                </div>
+      {/* Edit Confirmation Modal */}
+      {showEditConfirmModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-screen items-center justify-center p-4">
+            <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={cancelEdit}></div>
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Edit Payment Plan
+                </h3>
+                <button
+                  onClick={cancelEdit}
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
 
-                <div className="flex justify-end gap-3">
-                  <button
-                    onClick={cancelEdit}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors duration-200"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={confirmEdit}
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors duration-200"
-                  >
-                    Confirm Edit
-                  </button>
-                </div>
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Are you sure you want to edit the payment plan for this student? This will unlock the payment plan selection for modification.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={cancelEdit}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmEdit}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors duration-200"
+                >
+                  Confirm Edit
+                </button>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Student Detail Modal */}
+      {/* Student Detail Modal */}
         <StudentDetailModal
           isOpen={showStudentDetailModal}
           onClose={() => {

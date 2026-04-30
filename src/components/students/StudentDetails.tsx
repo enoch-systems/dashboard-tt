@@ -1,15 +1,44 @@
 "use client";
-import React, { useState } from "react";
-import { mockStudents } from "@/data/students";
+import React, { useState, useEffect } from "react";
+import { fetchStudents, type Student } from "@/data/students";
 
 export function StudentDetails() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredStudents = mockStudents.filter(
+  useEffect(() => {
+    const loadStudents = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchStudents();
+        setStudents(data);
+      } catch (err) {
+        console.error('Error loading students:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadStudents();
+  }, []);
+
+  const filteredStudents = students.filter(
     (student) =>
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        <div className="p-6">
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
