@@ -14,11 +14,7 @@ export interface EmailFollowupData {
  * Create an email follow-up record
  */
 export async function createEmailFollowup(data: EmailFollowupData) {
-  // Temporarily disabled due to TypeScript build errors
-  // TODO: Fix database schema and re-enable
-  /*
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: followup, error } = await (supabase as any)
+  const { data: followup, error } = await supabase
     .from('email_followups')
     .insert({
       student_id: data.studentId,
@@ -32,8 +28,6 @@ export async function createEmailFollowup(data: EmailFollowupData) {
 
   if (error) throw error;
   return followup;
-  */
-  return null;
 }
 
 /**
@@ -75,9 +69,6 @@ export async function createAndSendFollowup(
   subject: string,
   message: string
 ) {
-  // Temporarily disabled due to TypeScript build errors
-  // TODO: Fix database schema and re-enable
-  /*
   // Create the follow-up record
   const followup = await createEmailFollowup({
     studentId: student.id,
@@ -90,8 +81,7 @@ export async function createAndSendFollowup(
     await sendFollowupEmail(student.email, student.name, subject, message);
 
     // Update the follow-up status to sent
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: updated, error } = await (supabase as any)
+    const { data: updated, error } = await supabase
       .from('email_followups')
       .update({ status: 'sent', sent_at: new Date().toISOString() })
       .eq('id', followup.id)
@@ -102,24 +92,18 @@ export async function createAndSendFollowup(
     return updated;
   } catch (error) {
     // Update the follow-up status to failed
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase as any)
+    await supabase
       .from('email_followups')
       .update({ status: 'failed' })
       .eq('id', followup.id);
     throw error;
   }
-  */
-  return null;
 }
 
 /**
  * Get all email follow-ups for a student
  */
 export async function getStudentFollowups(studentId: string) {
-  // Temporarily disabled due to TypeScript build errors
-  // TODO: Fix database schema and re-enable
-  /*
   const { data, error } = await supabase
     .from('email_followups')
     .select('*')
@@ -128,17 +112,12 @@ export async function getStudentFollowups(studentId: string) {
 
   if (error) throw error;
   return data;
-  */
-  return [];
 }
 
 /**
  * Get all pending follow-ups
  */
 export async function getPendingFollowups() {
-  // Temporarily disabled due to TypeScript build errors
-  // TODO: Fix database schema and re-enable
-  /*
   const { data, error } = await supabase
     .from('email_followups')
     .select('*, students(*)')
@@ -147,31 +126,23 @@ export async function getPendingFollowups() {
 
   if (error) throw error;
   return data;
-  */
-  return [];
 }
 
 /**
  * Get follow-up statistics
  */
 export async function getFollowupStats() {
-  // Temporarily disabled due to TypeScript build errors
-  // TODO: Fix database schema and re-enable
-  /*
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: sent, error: sentError } = await (supabase as any)
+  const { data: sent, error: sentError } = await supabase
     .from('email_followups')
     .select('id', { count: 'exact' })
     .eq('status', 'sent');
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: pending, error: pendingError } = await (supabase as any)
+  const { data: pending, error: pendingError } = await supabase
     .from('email_followups')
     .select('id', { count: 'exact' })
     .eq('status', 'pending');
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: failed, error: failedError } = await (supabase as any)
+  const { data: failed, error: failedError } = await supabase
     .from('email_followups')
     .select('id', { count: 'exact' })
     .eq('status', 'failed');
@@ -185,12 +156,5 @@ export async function getFollowupStats() {
     pending: pending || 0,
     failed: failed || 0,
     total: (sent || 0) + (pending || 0) + (failed || 0),
-  };
-  */
-  return {
-    sent: 0,
-    pending: 0,
-    failed: 0,
-    total: 0,
   };
 }
