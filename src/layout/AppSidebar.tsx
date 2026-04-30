@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState,useCallback } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
@@ -9,12 +8,13 @@ import {
   GridIcon,
   HorizontaLDots,
 } from "../icons/index";
+import { Users, Mail, User, CreditCard } from "lucide-react";
 
 type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
+  subItems?: { name: string; path: string; pro?: boolean; new?: boolean; icon?: React.ReactNode }[];
 };
 
 const navItems: NavItem[] = [
@@ -22,14 +22,20 @@ const navItems: NavItem[] = [
     icon: <GridIcon />,
     name: "Students Management",
     subItems: [
-      { name: "Student Database", path: "/", pro: false },
-      { name: "Student Details", path: "/student-details", pro: false },
-      { name: "Email Follow up portal", path: "/email-follow-up", pro: false },
+      { name: "Student Database", path: "/", pro: false, icon: <Users className="w-5 h-5" /> },
+      { name: "Email Follow up portal", path: "/email-portal", pro: false, icon: <Mail className="w-5 h-5" /> },
+      { name: "Payment Checker", path: "/email-portal/payment-checker", pro: false, icon: <CreditCard className="w-5 h-5" /> },
     ],
   },
 ];
 
-const othersItems: NavItem[] = [];
+const othersItems: NavItem[] = [
+  {
+    icon: <User className="w-5 h-5" />,
+    name: "User Profile",
+    path: "/profile",
+  },
+];
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
@@ -125,7 +131,14 @@ const AppSidebar: React.FC = () => {
                           : "menu-dropdown-item-inactive"
                       }`}
                     >
-                      {subItem.name}
+                      <div className="flex items-center gap-2">
+                        {subItem.icon && (
+                          <span className="flex-shrink-0">
+                            {subItem.icon}
+                          </span>
+                        )}
+                        <span>{subItem.name}</span>
+                      </div>
                       <span className="flex items-center gap-1 ml-auto">
                         {subItem.new && (
                           <span
@@ -175,7 +188,6 @@ const AppSidebar: React.FC = () => {
 
   useEffect(() => {
     // Check if the current path matches any submenu item
-    let submenuMatched = false;
     ["main", "others"].forEach((menuType) => {
       const items = menuType === "main" ? navItems : othersItems;
       items.forEach((nav, index) => {
@@ -186,18 +198,38 @@ const AppSidebar: React.FC = () => {
                 type: menuType as "main" | "others",
                 index,
               });
-              submenuMatched = true;
             }
           });
         }
       });
     });
-
-    // If no submenu item matches, close the open submenu
-    if (!submenuMatched) {
-      setOpenSubmenu(null);
-    }
   }, [pathname,isActive]);
+
+  const prevPathnameRef = useRef(pathname);
+  
+  useEffect(() => {
+    // Only check submenu match when pathname changes
+    if (prevPathnameRef.current !== pathname) {
+      // Check if current pathname matches any submenu item
+      const isSubmenuItemMatched = () => {
+        const checkItems = (items: NavItem[]) => {
+          return items.some((item: NavItem) => {
+            if (item.subItems) {
+              return item.subItems.some((subItem) => pathname === subItem.path);
+            }
+            return false;
+          });
+        };
+        
+        return checkItems(navItems) || checkItems(othersItems);
+      };
+
+      if (!isSubmenuItemMatched() && openSubmenu !== null) {
+        setTimeout(() => setOpenSubmenu(null), 0);
+      }
+      prevPathnameRef.current = pathname;
+    }
+  }, [pathname, openSubmenu]);
 
   useEffect(() => {
     // Set the height of the submenu items when the submenu is opened
@@ -251,7 +283,7 @@ const AppSidebar: React.FC = () => {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
                 <span className="text-white font-bold text-lg">TT</span>
               </div>
-              <span className="text-xl font-bold text-white">Academy</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">Academy</span>
             </div>
           ) : (
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">

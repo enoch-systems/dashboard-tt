@@ -1,7 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
-type PaymentPlan = "Select a plan" | "Fully Paid" | "1st installment" | "2nd installment";
+export type PaymentPlan = "Select a plan" | "Fully Paid" | "1st installment" | "2nd installment";
 
 interface PaymentPlanContextType {
   studentPaymentPlans: { [key: number]: PaymentPlan };
