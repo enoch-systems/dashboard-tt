@@ -91,25 +91,54 @@ export async function searchStudents(searchTerm: string): Promise<Student[]> {
 }
 
 export async function getStudentById(id: string): Promise<Student | null> {
-  const { data, error } = await supabase
-    .from('students')
-    .select('*')
-    .eq('id', id)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('students')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-  if (error) {
-    if (error.code === 'PGRST116') {
+    if (error) {
+      // Handle different error scenarios
+      if (error.code === 'PGRST116') {
+        // No rows returned
+        return null;
+      }
+      
+      // Create a more descriptive error message
+      const errorMessage = error.message || error.details || error.hint || 'Database query failed';
+      const errorCode = error.code || 'UNKNOWN';
+      
+      console.error('Error fetching student:', {
+        code: errorCode,
+        message: errorMessage,
+        details: error.details,
+        hint: error.hint
+      });
+      
+      throw new Error(`Failed to fetch student (${errorCode}): ${errorMessage}`);
+    }
+
+    if (!data) {
       return null;
     }
-    console.error('Error fetching student:', error);
-    throw new Error(`Failed to fetch student: ${error.message}`);
-  }
 
-  if (!data) {
-    return null;
+    return mapSupabaseStudent(data, 0);
+  } catch (err) {
+    console.error('Unexpected error in getStudentById:', err);
+    
+    // Handle different error types
+    if (err instanceof Error) {
+      throw new Error(`Failed to fetch student: ${err.message}`);
+    } else if (typeof err === 'object' && err !== null) {
+      // Handle object errors that might not be Error instances
+      const errorObj = err as any;
+      const message = errorObj.message || errorObj.error || JSON.stringify(err);
+      throw new Error(`Failed to fetch student: ${message}`);
+    } else {
+      throw new Error('Failed to fetch student: Unknown error occurred');
+    }
   }
-
-  return mapSupabaseStudent(data, 0);
 }
 
 export async function updateStudentPaymentPlan(

@@ -19,7 +19,7 @@ export default function AuthPage() {
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           <img
             alt="Tech Trailblazer Academy"
-            src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
+            src="https://res.cloudinary.com/deafv5ovi/image/upload/v1777573613/admin_nqwpy5.png"
             className="mx-auto h-10 w-auto"
           />
           <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-white">Sign in to your account</h2>

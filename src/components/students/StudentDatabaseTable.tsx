@@ -14,12 +14,13 @@ export function StudentDatabaseTable() {
   const [selectedPaymentFilter, setSelectedPaymentFilter] = useState<string>("All Students");
   const [openPaymentPlanDropdown, setOpenPaymentPlanDropdown] = useState<number | null>(null);
   const [lockedPaymentPlans, setLockedPaymentPlans] = useState<{ [key: number]: boolean }>({});
+  const [expandedStudentCards, setExpandedStudentCards] = useState<number | null>(null);
   const [editingStudentId, setEditingStudentId] = useState<number | null>(null);
   const [showEditConfirmModal, setShowEditConfirmModal] = useState(false);
   const [editedPaymentPlans, setEditedPaymentPlans] = useState<{ [key: number]: number }>({});
   const [editMessage, setEditMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showStudentDetailModal, setShowStudentDetailModal] = useState(false);
-  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [dateFilter, setDateFilter] = useState("default");
   const itemsPerPage = 20;
@@ -370,8 +371,209 @@ export function StudentDatabaseTable() {
             </div>
           )}
 
-          {/* Table */}
-          <div className="overflow-x-auto">
+          {/* Mobile Card View */}
+          <div className="lg:hidden">
+            <div className="space-y-4">
+              {currentStudents.map((student, index) => (
+                <div key={student.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  {/* Header with NO, Student Name, and Actions */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 text-sm text-gray-900 dark:text-gray-200 font-medium">
+                        {indexOfFirstStudent + index + 1}
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {student.name}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {student.email}
+                        </div>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setSelectedStudentId(student.originalId);
+                        setShowStudentDetailModal(true);
+                      }}
+                      className="px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 border border-blue-600 hover:border-blue-700 dark:border-blue-400 dark:hover:border-blue-300 rounded transition-colors duration-200"
+                    >
+                      View Detail
+                    </button>
+                  </div>
+
+                  {/* Payment Plan - Always Visible */}
+                  <div className="mb-3">
+                    <div className="relative" ref={setPaymentPlanDropdownRef(student.id)}>
+                      <button
+                        onClick={() => lockedPaymentPlans[student.id] ? null : setOpenPaymentPlanDropdown(openPaymentPlanDropdown === student.id ? null : student.id)}
+                        disabled={lockedPaymentPlans[student.id]}
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold items-center gap-1 relative ${
+                          getStudentPaymentPlan(student.originalId) === "Fully Paid"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                            : getStudentPaymentPlan(student.originalId) === "1st installment"
+                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
+                            : getStudentPaymentPlan(student.originalId) === "2nd installment"
+                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                            : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+                        } ${lockedPaymentPlans[student.id] ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'} transition-opacity duration-200 ${
+                          editedPaymentPlans[student.id] ? 'animate-pulse border-2 border-red-500' : ''
+                        }`}
+                      >
+                        {getStudentPaymentPlan(student.originalId)}
+                        {getStudentPaymentPlan(student.originalId) === "Select a plan" && (
+                          <svg 
+                            className={`w-3 h-3 ml-1 transition-transform duration-200 ${
+                              openPaymentPlanDropdown === student.id ? 'rotate-180' : ''
+                            }`} 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        )}
+                        {editedPaymentPlans[student.id] && (
+                          <svg 
+                            className="w-3 h-3 ml-1 text-red-500 animate-bounce"
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        )}
+                      </button>
+                      
+                      {openPaymentPlanDropdown === student.id && !lockedPaymentPlans[student.id] && (
+                        <div className="absolute top-full left-0 mt-1 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                          <div className="py-1">
+                            <button
+                              onClick={() => handlePaymentPlanChange(student.id, "Select a plan")}
+                              className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Select a plan
+                            </button>
+                            <button
+                              onClick={() => handlePaymentPlanChange(student.id, "Fully Paid")}
+                              className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Fully Paid
+                            </button>
+                            <button
+                              onClick={() => handlePaymentPlanChange(student.id, "1st installment")}
+                              className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              1st installment
+                            </button>
+                            <button
+                              onClick={() => handlePaymentPlanChange(student.id, "2nd installment")}
+                              className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              2nd installment
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Expandable Details */}
+                  <div>
+                    <button
+                      onClick={() => setExpandedStudentCards(expandedStudentCards === student.id ? null : student.id)}
+                      className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                    >
+                      <svg 
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          expandedStudentCards === student.id ? 'rotate-180' : ''
+                        }`} 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                      {expandedStudentCards === student.id ? 'Hide Details' : 'Show Details'}
+                    </button>
+                    
+                    {expandedStudentCards === student.id && (
+                      <div className="mt-3 space-y-3 border-t border-gray-200 dark:border-gray-700 pt-3">
+                        {/* Contact */}
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">CONTACT</span>
+                          <span className="text-sm text-gray-900 dark:text-gray-200">{student.phone}</span>
+                        </div>
+                        
+                        {/* Course */}
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">COURSE</span>
+                          <span className="text-sm text-gray-900 dark:text-gray-200">{student.course}</span>
+                        </div>
+                        
+                        {/* Registration Date */}
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">REG. DATE</span>
+                          <div className="text-right">
+                            <div className="text-sm text-gray-900 dark:text-gray-200">{student.regDate}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">{student.regTime}</div>
+                          </div>
+                        </div>
+                        
+                        {/* Amount Paid */}
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">AMOUNT PAID</span>
+                          <span className="text-sm text-gray-900 dark:text-gray-200">
+                            {(() => {
+                              const plan = getStudentPaymentPlan(student.originalId);
+                              if (plan === "Fully Paid") return "₦50,000";
+                              if (plan === "1st installment") return "₦30,000";
+                              if (plan === "2nd installment") return "₦20,000";
+                              return "N/A";
+                            })()}
+                          </span>
+                        </div>
+                        
+                        {/* Balance Remaining */}
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">BALANCE REMAINING</span>
+                          <span className="text-sm text-gray-900 dark:text-gray-200">
+                            {(() => {
+                              const plan = getStudentPaymentPlan(student.originalId);
+                              if (plan === "Fully Paid") return "₦0";
+                              if (plan === "1st installment") return "₦20,000";
+                              if (plan === "2nd installment") return "₦0";
+                              return "N/A";
+                            })()}
+                          </span>
+                        </div>
+                        
+                        {/* Edit Plan */}
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">EDIT PLAN</span>
+                          <button 
+                            onClick={() => handleEditClick(student.id)}
+                            className={`${
+                              lockedPaymentPlans[student.id] 
+                                ? 'text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300' 
+                                : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer'
+                            } transition-colors duration-200`}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full min-w-[800px]">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
@@ -381,25 +583,25 @@ export function StudentDatabaseTable() {
                   <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     STUDENT
                   </th>
-                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     CONTACT
                   </th>
-                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     COURSE
                   </th>
-                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     REG. DATE
                   </th>
                   <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     PAYMENT PLAN
                   </th>
-                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     AMOUNT PAID
                   </th>
-                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     BALANCE REMAINING
                   </th>
-                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     EDIT PLAN
                   </th>
                   <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -421,13 +623,13 @@ export function StudentDatabaseTable() {
                         {student.email}
                       </div>
                     </td>
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 hidden md:table-cell">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                       {student.phone}
                     </td>
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 hidden lg:table-cell">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                       {student.course}
                     </td>
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 dark:text-gray-200">
                         {student.regDate}
                       </div>
@@ -509,30 +711,30 @@ export function StudentDatabaseTable() {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 sm:px-6 py-4 text-sm text-gray-900 dark:text-gray-200 hidden md:table-cell">
+                    <td className="px-4 sm:px-6 py-4 text-sm text-gray-900 dark:text-gray-200">
                       {(() => {
                         const plan = getStudentPaymentPlan(student.originalId);
-                        if (plan === "Fully Paid") return "50,000";
-                        if (plan === "1st installment") return "30,000";
+                        if (plan === "Fully Paid") return "₦50,000";
+                        if (plan === "1st installment") return "₦30,000";
                         if (plan === "2nd installment") return (
                           <div>
-                            <div>20,000</div>
-                            <div className="text-[10px] text-gray-500">+30,000<br />1st pay</div>
+                            <div>₦20,000</div>
+                            <div className="text-[10px] text-gray-500">+₦30,000<br />1st pay</div>
                           </div>
                         );
                         return "N/A";
                       })()}
                     </td>
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 hidden lg:table-cell">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                       {(() => {
                         const plan = getStudentPaymentPlan(student.originalId);
-                        if (plan === "Fully Paid") return "0";
-                        if (plan === "1st installment") return "20,000";
-                        if (plan === "2nd installment") return "0";
+                        if (plan === "Fully Paid") return "₦0";
+                        if (plan === "1st installment") return "₦20,000";
+                        if (plan === "2nd installment") return "₦0";
                         return "N/A";
                       })()}
                     </td>
-                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 hidden sm:table-cell">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                       <button 
                         onClick={() => handleEditClick(student.id)}
                         className={`${
@@ -549,7 +751,7 @@ export function StudentDatabaseTable() {
                     <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                       <button 
                         onClick={() => {
-                          setSelectedStudentId(student.id);
+                          setSelectedStudentId(student.originalId);
                           setShowStudentDetailModal(true);
                         }}
                         className="px-2 sm:px-3 py-1 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 border border-blue-600 hover:border-blue-700 dark:border-blue-400 dark:hover:border-blue-300 rounded transition-colors duration-200"
@@ -679,7 +881,7 @@ export function StudentDatabaseTable() {
             setShowStudentDetailModal(false);
             setSelectedStudentId(null);
           }}
-          studentId={selectedStudentId || 0}
+          studentId={selectedStudentId || ''}
         />
       </div>
     </div>

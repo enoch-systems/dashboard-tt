@@ -39,7 +39,7 @@ const othersItems: NavItem[] = [
 ];
 
 const AppSidebar: React.FC = () => {
-  const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+  const { isExpanded, isMobileOpen, isHovered, setIsHovered, toggleMobileSidebar } = useSidebar();
   const pathname = usePathname();
   const { user } = useAuth();
 
@@ -93,6 +93,12 @@ const AppSidebar: React.FC = () => {
                 className={`menu-item group ${
                   isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
                 }`}
+                onClick={() => {
+                  // Close mobile sidebar when navigation item is clicked
+                  if (window.innerWidth < 768) {
+                    toggleMobileSidebar();
+                  }
+                }}
               >
                 <span
                   className={`${
@@ -132,6 +138,12 @@ const AppSidebar: React.FC = () => {
                           ? "menu-dropdown-item-active"
                           : "menu-dropdown-item-inactive"
                       }`}
+                      onClick={() => {
+                        // Close mobile sidebar when navigation item is clicked
+                        if (window.innerWidth < 768) {
+                          toggleMobileSidebar();
+                        }
+                      }}
                     >
                       <div className="flex items-center gap-2">
                         {subItem.icon && (
@@ -261,7 +273,7 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
+      className={`fixed mt-26 sm:mt-20 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
         ${
           isExpanded || isMobileOpen
             ? "w-[290px]"

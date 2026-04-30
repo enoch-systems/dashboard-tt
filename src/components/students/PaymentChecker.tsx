@@ -265,9 +265,9 @@ export function PaymentChecker() {
       {/* Image Modal */}
       {showImageModal && selectedRequest && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex min-h-screen items-center justify-center p-4">
+          <div className="flex min-h-screen items-center justify-center p-4 sm:p-6">
             <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={() => setShowImageModal(false)}></div>
-            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full p-6">
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Payment Proof - {selectedRequest.student_name}
@@ -282,43 +282,43 @@ export function PaymentChecker() {
                 </button>
               </div>
               
-              <div className="mb-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                  <div>
+              <div className="mb-3 sm:mb-4">
+                <div className="grid grid-cols-1 gap-3 text-sm">
+                  <div className="flex justify-between">
                     <span className="text-gray-500 dark:text-gray-400">Amount:</span>
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white">₦{selectedRequest.amount.toLocaleString()}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">₦{selectedRequest.amount.toLocaleString()}</span>
                   </div>
-                  <div>
+                  <div className="flex justify-between">
                     <span className="text-gray-500 dark:text-gray-400">Payment Date:</span>
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white">{selectedRequest.payment_date}</span>
+                    <span className="font-medium text-gray-900 dark:text-white text-right">{selectedRequest.payment_date}</span>
                   </div>
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Email:</span>
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white break-all">{selectedRequest.email}</span>
+                    <div className="font-medium text-gray-900 dark:text-white break-all mt-1">{selectedRequest.email}</div>
                   </div>
-                  <div>
+                  <div className="flex justify-between">
                     <span className="text-gray-500 dark:text-gray-400">Phone:</span>
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white">{selectedRequest.phone}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{selectedRequest.phone}</span>
                   </div>
-                  <div>
+                  <div className="flex justify-between">
                     <span className="text-gray-500 dark:text-gray-400">Submitted:</span>
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white">{selectedRequest.submitted_at}</span>
+                    <span className="font-medium text-gray-900 dark:text-white text-right">{selectedRequest.submitted_at}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 flex items-center justify-center min-h-[400px]">
+              <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 sm:p-4 flex items-center justify-center min-h-[200px] sm:min-h-[400px] max-h-[50vh] sm:max-h-[60vh] overflow-hidden">
                 {/* Display the actual uploaded image from Cloudinary */}
                 {selectedRequest.cloudinary_url ? (
                   <img 
                     src={selectedRequest.cloudinary_url}
                     alt="Payment Proof"
-                    className="max-w-full max-h-[500px] rounded-lg shadow-lg object-contain"
+                    className="max-w-full max-h-full rounded-lg shadow-lg object-contain"
                   />
                 ) : (
                   <div className="text-center">
                     <svg
-                      className="mx-auto h-16 w-16 text-gray-400 dark:text-gray-500 mb-4"
+                      className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400 dark:text-gray-500 mb-3 sm:mb-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -330,29 +330,14 @@ export function PaymentChecker() {
                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                       />
                     </svg>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">
+                    <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
                       No image available
                     </p>
                   </div>
                 )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => handleStatusChange(selectedRequest.id, 'approved')}
-                  className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200"
-                >
-                  Approve Payment
-                </button>
-                <button
-                  onClick={() => handleStatusChange(selectedRequest.id, 'rejected')}
-                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200"
-                >
-                  Reject Payment
-                </button>
-              </div>
-
+              
                           </div>
           </div>
         </div>
