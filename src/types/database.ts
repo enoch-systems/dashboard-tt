@@ -21,6 +21,7 @@ export interface Database {
           email?: string
           updated_at?: string
         }
+        Relationships: []
       }
       user_profiles: {
         Row: {
@@ -56,6 +57,7 @@ export interface Database {
           location?: string
           updated_at?: string
         }
+        Relationships: []
       }
       business_links: {
         Row: {
@@ -94,6 +96,7 @@ export interface Database {
           sort_order?: number
           updated_at?: string
         }
+        Relationships: []
       }
       social_links: {
         Row: {
@@ -123,6 +126,7 @@ export interface Database {
           is_active?: boolean
           updated_at?: string
         }
+        Relationships: []
       }
       students: {
         Row: {
@@ -198,6 +202,7 @@ export interface Database {
           last_progress?: string
           updated_at?: string
         }
+        Relationships: []
       }
       email_followups: {
         Row: {
@@ -230,6 +235,7 @@ export interface Database {
           email_provider?: string
           updated_at?: string
         }
+        Relationships: []
       }
       payment_requests: {
         Row: {
@@ -280,6 +286,7 @@ export interface Database {
           rejection_reason?: string
           updated_at?: string
         }
+        Relationships: []
       }
       payment_receipts: {
         Row: {
@@ -336,6 +343,7 @@ export interface Database {
           notes?: string
           updated_at?: string
         }
+        Relationships: []
       }
     }
     Views: {
@@ -346,6 +354,9 @@ export interface Database {
       update_updated_at_column: () => void
     }
     Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
       [_ in never]: never
     }
   }

@@ -1,8 +1,11 @@
-import { supabase } from './supabase';
+import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
-import type { EmailFollowupInsert, Student } from '@/types/database';
+import type { EmailFollowup, Student } from '@/types/database';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const emailFollowupClient = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface EmailFollowupData {
   studentId: string;
@@ -14,7 +17,7 @@ export interface EmailFollowupData {
  * Create an email follow-up record
  */
 export async function createEmailFollowup(data: EmailFollowupData) {
-  const { data: followup, error } = await supabase
+  const { data: followup, error } = await emailFollowupClient
     .from('email_followups')
     .insert({
       student_id: data.studentId,
@@ -27,7 +30,7 @@ export async function createEmailFollowup(data: EmailFollowupData) {
     .single();
 
   if (error) throw error;
-  return followup;
+  return followup as EmailFollowup;
 }
 
 /**
@@ -81,7 +84,7 @@ export async function createAndSendFollowup(
     await sendFollowupEmail(student.email, student.name, subject, message);
 
     // Update the follow-up status to sent
-    const { data: updated, error } = await supabase
+    const { data: updated, error } = await emailFollowupClient
       .from('email_followups')
       .update({ status: 'sent', sent_at: new Date().toISOString() })
       .eq('id', followup.id)
@@ -89,10 +92,10 @@ export async function createAndSendFollowup(
       .single();
 
     if (error) throw error;
-    return updated;
+    return updated as EmailFollowup;
   } catch (error) {
     // Update the follow-up status to failed
-    await supabase
+    await emailFollowupClient
       .from('email_followups')
       .update({ status: 'failed' })
       .eq('id', followup.id);
@@ -104,21 +107,21 @@ export async function createAndSendFollowup(
  * Get all email follow-ups for a student
  */
 export async function getStudentFollowups(studentId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await emailFollowupClient
     .from('email_followups')
     .select('*')
     .eq('student_id', studentId)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data;
+  return (data || []) as EmailFollowup[];
 }
 
 /**
  * Get all pending follow-ups
  */
 export async function getPendingFollowups() {
-  const { data, error } = await supabase
+  const { data, error } = await emailFollowupClient
     .from('email_followups')
     .select('*, students(*)')
     .eq('status', 'pending')
@@ -132,19 +135,19 @@ export async function getPendingFollowups() {
  * Get follow-up statistics
  */
 export async function getFollowupStats() {
-  const { data: sent, error: sentError } = await supabase
+  const { count: sent, error: sentError } = await emailFollowupClient
     .from('email_followups')
-    .select('id', { count: 'exact' })
+    .select('id', { count: 'exact', head: true })
     .eq('status', 'sent');
 
-  const { data: pending, error: pendingError } = await supabase
+  const { count: pending, error: pendingError } = await emailFollowupClient
     .from('email_followups')
-    .select('id', { count: 'exact' })
+    .select('id', { count: 'exact', head: true })
     .eq('status', 'pending');
 
-  const { data: failed, error: failedError } = await supabase
+  const { count: failed, error: failedError } = await emailFollowupClient
     .from('email_followups')
-    .select('id', { count: 'exact' })
+    .select('id', { count: 'exact', head: true })
     .eq('status', 'failed');
 
   if (sentError || pendingError || failedError) {
