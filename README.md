@@ -2,7 +2,7 @@
 
 A comprehensive admin dashboard for managing student registrations, payment verification, email communications, and scholarship applications for the Tech Trailblazer Academy program.
 
-## 🚀 Features
+## Features
 
 ### Student Management
 - **Student Database**: View and manage all registered students with advanced filtering and pagination
@@ -50,7 +50,7 @@ A comprehensive admin dashboard for managing student registrations, payment veri
 - **Sidebar Navigation**: Intuitive navigation with collapsible menu
 - **Notification System**: Real-time notification bell with dropdown
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
@@ -61,7 +61,7 @@ A comprehensive admin dashboard for managing student registrations, payment veri
 - **State Management**: React Context API
 - **Icons**: Lucide React
 
-## 📦 Installation
+## Installation
 
 1. **Clone the repository**
    ```bash
@@ -99,7 +99,7 @@ A comprehensive admin dashboard for managing student registrations, payment veri
 5. **Open your browser**
    Navigate to `http://localhost:3000`
 
-## 🌐 Available Routes
+## Available Routes
 
 ### Public Routes
 - `/register` - Scholarship registration form
@@ -113,7 +113,7 @@ A comprehensive admin dashboard for managing student registrations, payment veri
 - `/students` - Student database
 - `/profile` - User profile settings
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Authentication
 - `POST /api/auth/login` - Admin login
@@ -128,7 +128,7 @@ A comprehensive admin dashboard for managing student registrations, payment veri
 - `POST /api/send-email` - Send email to students
 - `POST /api/preview-email` - Preview email before sending
 
-## 📋 Key Components
+## Key Components
 
 ### Student Management
 - `StudentDatabaseTable` - Main student table with filtering and pagination
@@ -149,7 +149,7 @@ A comprehensive admin dashboard for managing student registrations, payment veri
 ### Authentication
 - `AuthPage` - Login page with Supabase integration
 
-## 🔧 Configuration
+## Configuration
 
 ### Supabase Setup
 1. Create a Supabase project at https://supabase.com
@@ -167,7 +167,7 @@ A comprehensive admin dashboard for managing student registrations, payment veri
 2. Create an upload preset for unsigned uploads
 3. Add credentials to `.env.local`
 
-## 🎨 Features Breakdown
+## Features Breakdown
 
 ### Date/Time Filters
 All main pages (PaymentChecker, EmailPage, StudentDatabaseTable) include:
@@ -187,7 +187,7 @@ All main pages (PaymentChecker, EmailPage, StudentDatabaseTable) include:
 - **Auto-Reset**: Pagination resets when filters or search changes
 - **Scroll to Top**: Automatically scrolls to top on page change
 
-## 📝 Usage
+## Usage
 
 ### Admin Workflow
 1. **Login**: Access `/authpage` with your Supabase credentials
@@ -200,7 +200,7 @@ All main pages (PaymentChecker, EmailPage, StudentDatabaseTable) include:
 2. **Upload Payment**: Submit payment proof at `/paymentupload`
 3. **Wait for Verification**: Admin reviews and approves payments
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -208,19 +208,19 @@ All main pages (PaymentChecker, EmailPage, StudentDatabaseTable) include:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is proprietary software for Tech Trailblazer Academy.
 
-## 👥 Team
+## Team
 
 - **Development**: Tech Trailblazer Academy Team
 - **Project**: Dashboard Management System
 
-## 📞 Support
+## Support
 
 For support and questions, please contact the development team.
 
 ---
 
-**Built with ❤️ for Tech Trailblazer Academy**
+
