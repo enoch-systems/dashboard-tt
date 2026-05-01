@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/context/AuthContext";
 
 export default function AuthPage() {
+  const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,12 +16,8 @@ export default function AuthPage() {
     setError("");
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
+      const { error } = await signIn(email, password);
+      if (error) throw new Error(error.message);
 
       // Redirect to admin dashboard on success
       window.location.href = "/";
