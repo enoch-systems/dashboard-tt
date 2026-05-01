@@ -87,7 +87,8 @@ export function EmailPage() {
       try {
         setHistoryLoading(true);
         const response = await fetch(
-          `/api/email-history?page=${page}&limit=${historyItemsPerPage}&query=${encodeURIComponent(query)}`,
+          `/api/email-history?page=${page}&limit=${historyItemsPerPage}&query=${encodeURIComponent(query)}&_t=${Date.now()}`,
+          { cache: "no-store" },
         );
         const result = await response.json().catch(() => null);
 
@@ -105,7 +106,7 @@ export function EmailPage() {
         console.error("Error loading email history:", error);
         setEmailMessage({
           type: "error",
-          text: "Failed to load email sent history.",
+          text: "Failed to load sent email history.",
         });
       } finally {
         setHistoryLoading(false);
@@ -398,6 +399,7 @@ export function EmailPage() {
               setShowEmailHistory(next);
               if (next) {
                 setCurrentPage(1);
+                void loadEmailHistory(1, searchTerm);
               }
             }}
             className="w-full sm:ml-auto sm:w-auto rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 hover:shadow dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"

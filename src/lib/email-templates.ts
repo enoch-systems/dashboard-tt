@@ -8,6 +8,9 @@ export interface EmailData {
   courseName?: string;
   startDate?: string;
   scholarshipDate?: string;
+  scholarshipDecisionDate?: string;
+  communityWhatsappLink?: string;
+  communityTelegramLink?: string;
   paymentType?: "Fully Paid" | "1st Installment" | "2nd Installment";
   amountPaid?: number;
   paymentDate?: string;
@@ -222,60 +225,84 @@ export function getEmailSubject(emailType: string, data: EmailData) {
 
 export const emailTemplates = {
   welcome: (data: EmailData): string =>
-    baseShell({
-      title: "Welcome to Tech Trailblazer Academy",
-      preheader: `${data.studentName}, congratulations! You have been selected for the scholarship cohort starting ${KICKOFF_DATE}.`,
-      body: `
-        <p style="margin:0 0 16px 0;font-size:18px;font-weight:700;color:#111827;">Hey ${data.studentName},</p>
-        <p style="margin:0 0 16px 0;font-size:16px;line-height:1.7;color:#374151;"><strong>Congratulations - you have been selected for the Tech Trailblazer Academy Scholarship Bootcamp.</strong></p>
-        <p style="margin:0 0 16px 0;font-size:16px;line-height:1.7;color:#374151;">
-          This is a major milestone, and we are genuinely excited to welcome you into our learning community.
-          Your decision to build a career in <strong>${normalizeCourseName(data.courseName) || "your selected tech track"}</strong> is bold and future-focused.
-          ${courseCareerHint(data.courseName)}
-        </p>
-        <div style="margin:20px 0;padding:18px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;">
-          <p style="margin:0 0 8px 0;font-size:15px;color:#111827;"><strong>Scholarship Status:</strong> Selected</p>
-          <p style="margin:0 0 8px 0;font-size:15px;color:#111827;"><strong>Program Track:</strong> ${normalizeCourseName(data.courseName) || "Selected Track"}</p>
-          <p style="margin:0 0 8px 0;font-size:15px;color:#111827;"><strong>Class Kickoff:</strong> ${data.startDate || KICKOFF_DATE}</p>
-          <p style="margin:0;font-size:15px;color:#111827;"><strong>Format:</strong> Virtual live classes (${PROGRAM_DURATION})</p>
-        </div>
+    (() => {
+      const awardMailDate = String(data.scholarshipDecisionDate || data.scholarshipDate || "4th December, 2025");
+      const classStartDate = String(data.startDate || KICKOFF_DATE);
+      const whatsappLink = String(data.communityWhatsappLink || data.groupLink || "https://chat.whatsapp.com/Bi5XuFToVdjBPRvIawWz5W");
 
-        <h3 style="margin:24px 0 12px 0;font-size:17px;line-height:1.4;color:#111827;">What your virtual learning experience will look like</h3>
-        <p style="margin:0 0 12px 0;font-size:16px;line-height:1.7;color:#374151;">
-          Your cohort runs fully online, so you can join from anywhere with stable internet access.
-          Classes include instructor-led live sessions, guided practical tasks, feedback loops, and accountability checkpoints to keep you progressing every week.
-        </p>
-        <p style="margin:0 0 12px 0;font-size:16px;line-height:1.7;color:#374151;">
-          You will not be learning in isolation: you will be part of a structured community where you can ask questions, collaborate with peers, and get clarity from mentors in real time.
-        </p>
+      return baseShell({
+        title: "Welcome to Tech Trailblazer Academy",
+        preheader: `${data.studentName}, congratulations. Your application has been received and your scholarship process has started.`,
+        body: `
+          <p style="margin:0 0 12px 0;font-size:16px;line-height:1.7;color:#111827;">Hey ${data.studentName},</p>
+          <p style="margin:0 0 20px 0;font-size:16px;line-height:1.8;color:#111827;"><strong>Congratulations - you did it. 🎉</strong></p>
 
-        <h3 style="margin:24px 0 12px 0;font-size:17px;line-height:1.4;color:#111827;">What you stand to gain from this scholarship bootcamp</h3>
-        <div style="margin:0 0 16px 0;padding:16px 18px;border:1px solid #e5e7eb;border-radius:10px;background:#ffffff;">
-          <ul style="margin:0;padding-left:20px;color:#374151;font-size:15px;line-height:1.7;">
-            <li style="margin-bottom:6px;">Hands-on project experience in your selected track</li>
-            <li style="margin-bottom:6px;">Industry-relevant skills employers are actively hiring for</li>
-            <li style="margin-bottom:6px;">Portfolio-ready outputs you can showcase publicly</li>
-            <li style="margin-bottom:6px;">Mentorship, peer community, and practical guidance</li>
-            <li style="margin-bottom:6px;">Career growth support with real implementation focus</li>
-            <li style="margin-bottom:0;">A clear path from beginner/intermediate level to job-ready execution</li>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:1.9;color:#111827;">
+            Your application for the Tech Trailblazer Academy Scholarship Bootcamp has been successfully received, and we are thrilled to have you on this journey.
+          </p>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:1.9;color:#111827;">
+            While we review your application, your decision today to begin your journey in <strong>${normalizeCourseName(data.courseName) || "your selected track"}</strong> is a bold step toward a better future. ${courseCareerHint(data.courseName)}
+          </p>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:1.9;color:#111827;">
+            Thousands of Africans across multiple countries have taken this same step and gone on to build thriving careers in tech. Now, your next chapter begins.
+          </p>
+
+          <p style="margin:0 0 10px 0;font-size:15px;line-height:1.9;color:#111827;"><strong>Let us show you what is possible:</strong></p>
+          <ul style="margin:0 0 18px 0;padding-left:20px;color:#111827;font-size:15px;line-height:1.9;">
+            <li style="margin-bottom:8px;"><strong>Toluwani</strong> built a real-time intelligent payment platform during the scholarship program.</li>
+            <li style="margin-bottom:8px;"><strong>Chidera</strong> transitioned into AI and started building practical disease prediction systems.</li>
+            <li style="margin-bottom:8px;"><strong>Amarachi</strong> landed a full-stack developer role after earning her certification.</li>
+            <li style="margin-bottom:8px;"><strong>Oluwaseun</strong> built Goldex, a crypto and fiat converter, as a bootcamp project.</li>
+            <li style="margin-bottom:0;"><strong>Adebayo</strong> passed ISC2 cybersecurity certification within two months of joining the program.</li>
           </ul>
-        </div>
 
-        <p style="margin:0 0 12px 0;font-size:16px;line-height:1.7;color:#374151;">
-          At Tech Trailblazer Academy, we believe world-class tech education should be practical, accessible, and transformational.
-          This scholarship gives you the structure and support to move from intention to measurable progress.
-        </p>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:1.9;color:#111827;">
+            These are not just stories. They are proof that with the right support, right training, and right mindset, transformation is possible.
+          </p>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:1.9;color:#111827;">
+            Our tracks include Data Analytics, Frontend Development, Business Analysis, Product Design (UI/UX), Mobile App Development, Backend Development, Product Management, Ethical Hacking, Cybersecurity, Virtual Assistance, Cloud Computing, Technical Writing, Digital Marketing, Web3, Artificial Intelligence, and Data Science.
+          </p>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:1.9;color:#111827;">
+            At Tech Trailblazer Academy, we do not just teach. We transform, and we believe access to quality tech education and resources should be available to everyone regardless of financial background.
+          </p>
 
-        <p style="margin:0 0 16px 0;font-size:16px;line-height:1.7;color:#374151;">
-          In the coming days, we will send your onboarding instructions, class schedule, and preparation checklist.
-          Please watch your email closely so you do not miss key announcements before kickoff.
-        </p>
-        <p style="margin:0;font-size:16px;line-height:1.7;color:#374151;">
-          Once again, congratulations on your scholarship selection. We are proud to have you with us.
-          Let us build your next chapter in tech - together.
-        </p>
-      `,
-    }),
+          <p style="margin:0 0 10px 0;font-size:16px;line-height:1.8;color:#111827;"><strong>${data.studentName}, what happens next?</strong></p>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:1.9;color:#111827;">
+            Over the next few days, we will share details about your scholarship process, eligibility, important milestones, and how to maximize your chances. For now, relax and get ready - your journey has started.
+          </p>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:1.9;color:#111827;">
+            After the Scholarship Award mail is sent, you must confirm your status if selected within the acceptance window to stay enrolled in the scholarship cohort.
+          </p>
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:1.9;color:#111827;">
+            Classes are scheduled to commence on <strong>${classStartDate}</strong>. Get ready for an immersive, hands-on experience designed to transform your career.
+          </p>
+          <p style="margin:0 0 20px 0;font-size:15px;line-height:1.9;color:#111827;">
+            Please note that selection is competitive, and final acceptance depends on available sponsorship slots and review outcomes.
+          </p>
+
+          <p style="margin:0 0 10px 0;font-size:14px;line-height:1.9;color:#111827;">
+            <strong>NB:</strong> To join our community for mentorship sessions and scholarship updates, use the WhatsApp link below before spaces fill up.
+          </p>
+          <div style="text-align:center;margin:0 0 18px 0;">
+            <a href="${whatsappLink}" style="display:block;margin:0 auto 10px auto;max-width:440px;background:#25D366;color:#ffffff;text-decoration:none;padding:12px 16px;border-radius:6px;font-size:13px;font-weight:700;letter-spacing:.2px;text-transform:uppercase;">
+              <span style="display:inline-flex;align-items:center;justify-content:center;gap:8px;">
+                <svg width="17" height="17" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true" style="display:inline-block;vertical-align:middle;">
+                  <path d="M16.02 3.2C8.95 3.2 3.2 8.94 3.2 16.01c0 2.23.58 4.42 1.69 6.35L3.1 28.8l6.62-1.74a12.8 12.8 0 0 0 6.3 1.62h.01c7.06 0 12.8-5.74 12.8-12.81A12.8 12.8 0 0 0 16.02 3.2Zm0 23.36h-.01a10.52 10.52 0 0 1-5.36-1.48l-.39-.23-3.93 1.03 1.05-3.84-.25-.4a10.52 10.52 0 0 1-1.61-5.63c0-5.82 4.69-10.56 10.5-10.56 2.81 0 5.45 1.09 7.43 3.08a10.46 10.46 0 0 1 3.08 7.45c0 5.82-4.73 10.56-10.51 10.56Zm5.77-7.87c-.32-.16-1.9-.94-2.2-1.04-.3-.1-.51-.16-.73.16-.22.32-.84 1.04-1.03 1.25-.19.22-.38.24-.7.08-.32-.16-1.37-.5-2.61-1.61-.97-.86-1.62-1.93-1.81-2.25-.19-.32-.02-.5.14-.66.14-.14.32-.38.48-.56.16-.19.22-.32.32-.54.1-.22.05-.4-.03-.56-.08-.16-.73-1.76-1-2.42-.27-.64-.54-.55-.73-.56-.19-.01-.41-.01-.63-.01s-.56.08-.85.4c-.29.32-1.12 1.09-1.12 2.66 0 1.57 1.15 3.08 1.31 3.29.16.22 2.25 3.44 5.45 4.82.76.33 1.36.53 1.82.68.77.24 1.47.2 2.02.12.62-.09 1.9-.78 2.17-1.54.27-.75.27-1.4.19-1.54-.08-.14-.29-.22-.6-.37Z"/>
+                </svg>
+                <span>Click Here To Join The WhatsApp Scholarship Community</span>
+              </span>
+            </a>
+          </div>
+
+          <p style="margin:0 0 16px 0;font-size:15px;line-height:1.9;color:#111827;">Wishing you the very best on this journey.</p>
+          <p style="margin:0;font-size:15px;line-height:1.9;color:#111827;">
+            Warm regards,<br>
+            Programs Team<br>
+            Tech Trailblazer Academy
+          </p>
+        `,
+      });
+    })(),
   payment_confirmation: (data: EmailData): string => {
     const paymentType = data.paymentType || "Fully Paid";
     const messageByType: Record<string, string> = {

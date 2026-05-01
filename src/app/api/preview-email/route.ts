@@ -17,6 +17,7 @@ function generateEmailHtml(emailType: string, data: EmailData): string {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const emailType = searchParams.get('type') || 'welcome';
+  const embedded = searchParams.get('embedded') === '1';
   const studentName = searchParams.get('studentName') || 'John Doe';
   const courseName = searchParams.get('courseName') || 'Tech Trailblazer Scholarship Bootcamp Cohort 1';
   const startDate = searchParams.get('startDate') || '20th May, 2026';
@@ -36,6 +37,12 @@ export async function GET(request: NextRequest) {
     groupName: groupInfo.name,
     groupLink: groupInfo.link,
   });
+
+  if (embedded) {
+    return new Response(emailHtml, {
+      headers: { 'Content-Type': 'text/html' }
+    });
+  }
 
   return new Response(`
     <!DOCTYPE html>
