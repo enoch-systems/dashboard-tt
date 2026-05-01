@@ -765,6 +765,19 @@ export function RegistrationForm() {
                       ? "Checking student details..."
                       : "Submit Registration"}
                 </button>
+
+                {submissionState ? (
+                  <div
+                    aria-live="polite"
+                    className={`rounded-2xl border px-5 py-4 text-sm font-semibold ${
+                      submissionState.type === "success"
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+                        : "border-rose-200 bg-rose-50 text-rose-800"
+                    }`}
+                  >
+                    {submissionState.message}
+                  </div>
+                ) : null}
               </form>
             </div>
 

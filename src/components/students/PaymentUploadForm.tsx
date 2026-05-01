@@ -115,19 +115,6 @@ export function PaymentUploadForm() {
         <div className="absolute inset-0 bg-[linear-gradient(rgba(120,120,120,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(120,120,120,0.12)_1px,transparent_1px)] bg-[size:72px_72px]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(159,7,18,0.12),_transparent_28%),radial-gradient(circle_at_bottom_left,_rgba(0,0,0,0.08),_transparent_30%)]" />
         <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-          {submissionState ? (
-            <div
-              aria-live="polite"
-              className={`mb-6 rounded-[26px] border px-5 py-4 shadow-sm sm:px-6 ${
-                submissionState.type === "success"
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-                  : "border-rose-200 bg-rose-50 text-rose-800"
-              }`}
-            >
-              <p className="text-sm font-semibold">{submissionState.message}</p>
-            </div>
-          ) : null}
-
           <div className="grid gap-8 lg:grid-cols-[1.05fr_1fr]">
             <div className="space-y-6 rounded-[30px] border border-[#9f0712]/15 bg-white/85 p-6 text-slate-900 shadow-[0_20px_60px_rgba(159,7,18,0.08)] backdrop-blur sm:p-8">
               <div className="inline-flex items-center rounded-full border border-[#9f0712]/15 bg-[#9f0712] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.24em] text-white">
@@ -269,6 +256,31 @@ export function PaymentUploadForm() {
           </div>
         </div>
       </div>
+      {submissionState ? (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/45"
+            onClick={() => setSubmissionState(null)}
+          />
+          <div
+            aria-live="polite"
+            className={`relative w-full max-w-md rounded-3xl border p-6 text-center shadow-2xl sm:p-7 ${
+              submissionState.type === "success"
+                ? "border-emerald-200 bg-white text-emerald-900"
+                : "border-rose-200 bg-white text-rose-800"
+            }`}
+          >
+            <p className="text-base font-semibold leading-7">{submissionState.message}</p>
+            <button
+              type="button"
+              onClick={() => setSubmissionState(null)}
+              className="mt-5 inline-flex rounded-xl bg-[#9f0712] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#7f000a]"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
