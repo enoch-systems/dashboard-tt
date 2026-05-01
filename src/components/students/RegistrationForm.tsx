@@ -118,8 +118,6 @@ const discoveryChannels = [
   "Other",
 ];
 
-const whatsappGroupLink =
-  "https://chat.whatsapp.com/Bi5XuFToVdjBPRvIawWz5W";
 
 const inputClassName =
   "w-full rounded-2xl border border-stone-200 bg-white px-4 py-3.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-[#9f0712] focus:ring-4 focus:ring-[#9f0712]/10";
@@ -478,23 +476,7 @@ export function RegistrationForm() {
                   <p className="text-sm font-semibold">
                     {submissionState.message}
                   </p>
-                  {submissionState.type === "success" ? (
-                    <p className="mt-1 text-sm text-emerald-800">
-                      Follow up via our WhatsApp community for updates and
-                      announcements.
-                    </p>
-                  ) : null}
                 </div>
-                {submissionState.type === "success" ? (
-                  <a
-                    href={whatsappGroupLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center justify-center rounded-full bg-[#0f172a] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#9f0712]"
-                  >
-                    Join WhatsApp
-                  </a>
-                ) : null}
               </div>
             </div>
           ) : null}
@@ -730,10 +712,6 @@ export function RegistrationForm() {
                       </select>
                     </div>
 
-                    <div className="md:col-span-2 rounded-2xl border border-[#9f0712]/10 bg-[#fff7f7] p-4 text-sm text-slate-700">
-                      Need help with your application? Submit this form and follow
-                      up through our WhatsApp community for updates.
-                    </div>
 
                     <div className="md:col-span-2">
                       <FieldLabel
@@ -787,24 +765,6 @@ export function RegistrationForm() {
                 <div className="inline-flex items-center rounded-full border border-[#9f0712]/15 bg-[#9f0712] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.24em] text-white">
                   Tech Trailblazer Academy
                 </div>
-                <a
-                  href={whatsappGroupLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-[#9f0712]/15 bg-white px-4 py-2 text-sm font-semibold text-[#9f0712] transition hover:bg-[#9f0712] hover:text-white"
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#25D366] text-white">
-                    <svg
-                      className="h-4 w-4"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path d="M20.52 3.48A11.86 11.86 0 0012.06 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.15 1.59 5.95L0 24l6.33-1.66a11.8 11.8 0 005.72 1.46h.01c6.56 0 11.9-5.34 11.9-11.9 0-3.18-1.24-6.17-3.44-8.42zm-8.46 18.3h-.01a9.8 9.8 0 01-5-1.37l-.36-.21-3.76.99 1-3.66-.24-.38A9.8 9.8 0 012.25 11.9C2.25 6.49 6.65 2.1 12.06 2.1c2.62 0 5.08 1.02 6.93 2.87a9.72 9.72 0 012.87 6.93c0 5.41-4.4 9.88-9.8 9.88zm5.38-7.36c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.08-.3-.15-1.26-.46-2.4-1.46-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.08-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.89 1.22 3.09.15.2 2.1 3.2 5.08 4.48.71.31 1.27.49 1.7.62.72.23 1.38.2 1.9.12.58-.09 1.77-.72 2.02-1.42.25-.69.25-1.29.17-1.42-.07-.12-.27-.2-.57-.35z" />
-                    </svg>
-                  </span>
-                  Join WhatsApp
-                </a>
               </div>
 
               <div className="space-y-5">
@@ -881,34 +841,6 @@ export function RegistrationForm() {
                       Virtual (Online)
                     </p>
                   </div>
-                  <a
-                    href={whatsappGroupLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group flex items-center gap-3 rounded-2xl bg-[linear-gradient(135deg,#25D366_0%,#128C7E_100%)] px-4 py-3 text-white shadow-lg shadow-[#25D366]/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#25D366]/30"
-                  >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-[#25D366] shadow-sm transition-transform duration-200 group-hover:scale-105">
-                      <svg
-                        className="h-6 w-6"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                      >
-                        <path d="M20.52 3.48A11.86 11.86 0 0012.06 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.15 1.59 5.95L0 24l6.33-1.66a11.8 11.8 0 005.72 1.46h.01c6.56 0 11.9-5.34 11.9-11.9 0-3.18-1.24-6.17-3.44-8.42zm-8.46 18.3h-.01a9.8 9.8 0 01-5-1.37l-.36-.21-3.76.99 1-3.66-.24-.38A9.8 9.8 0 012.25 11.9C2.25 6.49 6.65 2.1 12.06 2.1c2.62 0 5.08 1.02 6.93 2.87a9.72 9.72 0 012.87 6.93c0 5.41-4.4 9.88-9.8 9.88zm5.38-7.36c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.08-.3-.15-1.26-.46-2.4-1.46-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.08-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.89 1.22 3.09.15.2 2.1 3.2 5.08 4.48.71.31 1.27.49 1.7.62.72.23 1.38.2 1.9.12.58-.09 1.77-.72 2.02-1.42.25-.69.25-1.29.17-1.42-.07-.12-.27-.2-.57-.35z" />
-                      </svg>
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-[10px] font-semibold uppercase tracking-[0.22em] text-white/80">
-                        Follow Up
-                      </span>
-                      <span className="mt-1 block text-sm font-bold leading-tight sm:text-[15px]">
-                        Join our WhatsApp community
-                      </span>
-                    </span>
-                    <span className="hidden text-sm font-semibold text-white/90 sm:inline">
-                      Open
-                    </span>
-                  </a>
                 </div>
               </div>
             </div>
