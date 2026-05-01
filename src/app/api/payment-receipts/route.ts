@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { uploadImageToCloudinary } from '@/lib/cloudinary';
 
-// Create a Supabase client without strict typing for the new table
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xuohwrmofzqkyjpggwtv.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b2h3cm1vZnpxa3lqcGdnd3R2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzU0MjkyOSwiZXhwIjoyMDkzMTE4OTI5fQ.sy2rUTZHzTG8DSaNIFZbugqt1GdbbeP-37izdWLKJW4';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('Missing required Supabase environment variables for payment receipts API.');
+}
 
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 

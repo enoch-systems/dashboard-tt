@@ -84,7 +84,7 @@ export function StudentDetailModal({ isOpen, onClose, studentId }: StudentDetail
     return (
       <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm">
         <div className="flex min-h-screen items-center justify-center p-4">
-          <div className="rounded-3xl border border-white/10 bg-slate-900/90 p-8">
+          <div className="rounded-2xl border border-white/10 bg-slate-900/90 p-6">
             <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-400"></div>
           </div>
         </div>
@@ -96,7 +96,7 @@ export function StudentDetailModal({ isOpen, onClose, studentId }: StudentDetail
     return (
       <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm">
         <div className="flex min-h-screen items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-800">
+          <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl dark:bg-slate-800 sm:p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
                 <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,16 +164,16 @@ export function StudentDetailModal({ isOpen, onClose, studentId }: StudentDetail
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm">
-      <div className="flex min-h-screen items-start justify-center p-4 py-8 lg:p-8">
+      <div className="flex min-h-screen items-center justify-center p-3 sm:p-4 lg:p-6">
         <div className="fixed inset-0 transition-opacity" onClick={onClose}></div>
-        <div className="relative h-[92vh] max-h-[92vh] w-full max-w-6xl overflow-hidden rounded-[30px] border border-slate-200 bg-slate-100 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-          <div className="border-b border-slate-200 bg-white px-5 py-5 dark:border-slate-700 dark:bg-slate-900/95 lg:px-8">
+        <div className="relative flex max-h-[90dvh] w-full max-w-[95vw] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:max-w-3xl lg:max-w-4xl">
+          <div className="border-b border-slate-200 bg-white px-4 py-4 dark:border-slate-700 dark:bg-slate-900/95 sm:px-5 lg:px-6">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
                   Student Record
                 </p>
-                <h3 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
+                <h3 className="mt-2 text-xl font-semibold text-slate-900 dark:text-white sm:text-2xl">
                   View Details
                 </h3>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -191,7 +191,7 @@ export function StudentDetailModal({ isOpen, onClose, studentId }: StudentDetail
             </div>
           </div>
 
-          <div className="h-[calc(92vh-150px)] overflow-y-auto p-5 lg:p-8">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6">
             <div className="space-y-6">
               <div className="overflow-hidden rounded-[28px] bg-slate-950 text-white">
                 <div className="bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.35),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.18),_transparent_35%)] px-5 py-6 lg:px-8">
@@ -307,11 +307,11 @@ export function StudentDetailModal({ isOpen, onClose, studentId }: StudentDetail
             </div>
           </div>
 
-          <div className="border-t border-slate-200 bg-white px-5 py-4 dark:border-slate-700 dark:bg-slate-900 lg:px-8">
+          <div className="border-t border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900 sm:px-5 lg:px-6">
             <div className="flex justify-end">
             <button
               onClick={onClose}
-                className="inline-flex items-center rounded-2xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500"
+                className="inline-flex items-center rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500"
             >
               Close
             </button>
