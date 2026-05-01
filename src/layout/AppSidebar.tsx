@@ -1,21 +1,29 @@
 "use client";
 import React, { useEffect, useRef, useState,useCallback } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import { useAuth } from "../context/AuthContext";
+import { Modal } from "@/components/ui/modal";
 import {
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
 } from "../icons/index";
-import { Users, Mail, User, CreditCard } from "lucide-react";
+import { Users, Mail, User, CreditCard, ShieldAlert, Trash2 } from "lucide-react";
 
 type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean; icon?: React.ReactNode }[];
+  subItems?: {
+    name: string;
+    path: string;
+    pro?: boolean;
+    new?: boolean;
+    icon?: React.ReactNode;
+    requiresConfirmation?: boolean;
+  }[];
 };
 
 const navItems: NavItem[] = [
@@ -26,6 +34,7 @@ const navItems: NavItem[] = [
       { name: "Student Database", path: "/", pro: false, icon: <Users className="w-5 h-5" /> },
       { name: "Email Follow up portal", path: "/email-portal", pro: false, icon: <Mail className="w-5 h-5" /> },
       { name: "Payment Checker", path: "/email-portal/payment-checker", pro: false, icon: <CreditCard className="w-5 h-5" /> },
+      { name: "Student Management", path: "/student-management", pro: false, icon: <Trash2 className="w-5 h-5" />, requiresConfirmation: true },
     ],
   },
 ];
@@ -41,7 +50,10 @@ const othersItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered, toggleMobileSidebar } = useSidebar();
   const pathname = usePathname();
+  const router = useRouter();
   const { user } = useAuth();
+  const [showSensitiveRouteModal, setShowSensitiveRouteModal] = useState(false);
+  const [pendingNavigationPath, setPendingNavigationPath] = useState<string | null>(null);
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -138,7 +150,13 @@ const AppSidebar: React.FC = () => {
                           ? "menu-dropdown-item-active"
                           : "menu-dropdown-item-inactive"
                       }`}
-                      onClick={() => {
+                      onClick={(event) => {
+                        if (subItem.requiresConfirmation) {
+                          event.preventDefault();
+                          handleSensitiveNavigation(subItem.path);
+                          return;
+                        }
+
                         // Close mobile sidebar when navigation item is clicked
                         if (window.innerWidth < 768) {
                           toggleMobileSidebar();
@@ -196,6 +214,25 @@ const AppSidebar: React.FC = () => {
     {}
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const handleSensitiveNavigation = (path: string) => {
+    setPendingNavigationPath(path);
+    setShowSensitiveRouteModal(true);
+  };
+
+  const proceedToSensitiveRoute = () => {
+    if (!pendingNavigationPath) {
+      return;
+    }
+
+    router.push(pendingNavigationPath);
+    setShowSensitiveRouteModal(false);
+    setPendingNavigationPath(null);
+
+    if (window.innerWidth < 768) {
+      toggleMobileSidebar();
+    }
+  };
 
   // const isActive = (path: string) => path === pathname;
    const isActive = useCallback((path: string) => path === pathname, [pathname]);
@@ -272,22 +309,23 @@ const AppSidebar: React.FC = () => {
   };
 
   return (
-    <aside
-      className={`fixed mt-26 sm:mt-20 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
-        ${
-          isExpanded || isMobileOpen
-            ? "w-[290px]"
-            : isHovered
-            ? "w-[290px]"
-            : "w-[90px]"
-        }
-        ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0`}
-      onMouseEnter={() => !isExpanded && setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {user && (
-        <>
+    <>
+      <aside
+        className={`fixed mt-26 sm:mt-20 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
+          ${
+            isExpanded || isMobileOpen
+              ? "w-[290px]"
+              : isHovered
+              ? "w-[290px]"
+              : "w-[90px]"
+          }
+          ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:translate-x-0`}
+        onMouseEnter={() => !isExpanded && setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {user && (
+          <>
           <div
             className={`py-8 flex  ${
               !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
@@ -349,9 +387,57 @@ const AppSidebar: React.FC = () => {
           </div>
         </nav>
       </div>
-        </>
-      )}
-    </aside>
+          </>
+        )}
+      </aside>
+      <Modal
+        isOpen={showSensitiveRouteModal}
+        onClose={() => {
+          setShowSensitiveRouteModal(false);
+          setPendingNavigationPath(null);
+        }}
+        className="mx-4 max-w-xl p-0"
+      >
+        <div className="relative overflow-hidden rounded-[28px] border border-white/60 bg-white text-center shadow-[0_30px_120px_rgba(15,23,42,0.22)] dark:border-gray-800 dark:bg-gray-900">
+          <div className="absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_top,_rgba(251,191,36,0.32),_transparent_72%)]" />
+          <div className="relative px-6 py-8 sm:px-10 sm:py-10">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-400 to-red-500 text-white shadow-lg shadow-amber-200/70 dark:shadow-none">
+              <ShieldAlert className="h-8 w-8" />
+            </div>
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.28em] text-amber-600 dark:text-amber-300">
+              Sensitive Area
+            </p>
+            <h3 className="mt-3 text-2xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-[30px]">
+              Student Management Warning
+            </h3>
+            <p className="mx-auto mt-4 max-w-lg text-sm leading-7 text-gray-600 dark:text-gray-300 sm:text-base">
+              This section contains sensitive student records. Any wrong action can
+              permanently remove important data. Please proceed only if you are
+              sure.
+            </p>
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={proceedToSensitiveRoute}
+                className="inline-flex min-w-[170px] items-center justify-center rounded-2xl bg-red-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-red-700"
+              >
+                Yes, Proceed
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSensitiveRouteModal(false);
+                  setPendingNavigationPath(null);
+                }}
+                className="inline-flex min-w-[170px] items-center justify-center rounded-2xl border border-gray-300 bg-white px-5 py-3.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 };
 

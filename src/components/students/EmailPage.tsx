@@ -1,19 +1,22 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { fetchStudents, Student } from "@/data/students";
 import { SelectEmailType } from "./SelectEmailType";
 import { ConfirmEmailType } from "./ConfirmEmailType";
 import { PaymentTypeSelection } from "./PaymentTypeSelection";
+import { usePaymentPlan } from "@/context/PaymentPlanContext";
+import { getPaymentPlanAmounts } from "@/utils/paymentPlanService";
 // import { createAndSendFollowup } from "@/lib/emailFollowup";
 
 export function EmailPage() {
+  const { getStudentPaymentPlan } = usePaymentPlan();
   const [searchTerm, setSearchTerm] = useState("");
   const [showSelectEmailModal, setShowSelectEmailModal] = useState(false);
   const [showConfirmEmailModal, setShowConfirmEmailModal] = useState(false);
   const [selectedEmailType, setSelectedEmailType] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [dateFilter, setDateFilter] = useState("default");
+  const [sortOption, setSortOption] = useState<"latest" | "name">("latest");
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [emailMessage, setEmailMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -21,25 +24,40 @@ export function EmailPage() {
   const [selectedPaymentType, setSelectedPaymentType] = useState("");
   const itemsPerPage = 20;
 
-  useEffect(() => {
-    const loadStudents = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchStudents();
-        setStudents(data);
-      } catch (err) {
-        console.error('Error loading students:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadStudents();
+  const loadStudents = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await fetchStudents();
+      setStudents(data);
+    } catch (err) {
+      console.error('Error loading students:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadStudents();
+  }, [loadStudents]);
+
+  useEffect(() => {
+    const handleRefresh = () => {
+      loadStudents();
+    };
+
+    window.addEventListener('focus', handleRefresh);
+    document.addEventListener('visibilitychange', handleRefresh);
+
+    return () => {
+      window.removeEventListener('focus', handleRefresh);
+      document.removeEventListener('visibilitychange', handleRefresh);
+    };
+  }, [loadStudents]);
 
   // Reset to page 1 when search or filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, dateFilter]);
+  }, [searchTerm, sortOption]);
 
   // Auto-clear email messages after 3 seconds
   useEffect(() => {
@@ -69,14 +87,13 @@ export function EmailPage() {
     );
   }
 
-  // Sort by date/time
+  // Sort students by latest join or by name
   const sortedStudents = [...filteredStudents].sort((a, b) => {
-    if (dateFilter === "newest") {
+    if (sortOption === "latest") {
       return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-    } else if (dateFilter === "oldest") {
-      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
     }
-    return 0; // default - no sorting
+
+    return a.name.localeCompare(b.name);
   });
 
   // Pagination logic
@@ -107,6 +124,11 @@ export function EmailPage() {
     setShowSelectEmailModal(true);
   };
 
+  const currentSelectedPlan = selectedStudent
+    ? getStudentPaymentPlan(selectedStudent.originalId)
+    : "Select a plan";
+  const currentSelectedPlanAmounts = getPaymentPlanAmounts(currentSelectedPlan);
+
   const handleEmailTypeSelect = (emailType: string) => {
     setSelectedEmailType(emailType);
     setShowSelectEmailModal(false);
@@ -136,6 +158,26 @@ export function EmailPage() {
     }
   };
 
+  const getPaymentPlanBadgeClasses = (plan: string) => {
+    if (plan === "Fully Paid") {
+      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+    }
+
+    if (plan === "1st installment") {
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
+    }
+
+    if (plan === "2nd installment") {
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+    }
+
+    if (plan === "Not Paid Yet") {
+      return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400";
+    }
+
+    return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400";
+  };
+
   const handleConfirmEmail = async () => {
     try {
       const response = await fetch('/api/send-email', {
@@ -150,11 +192,14 @@ export function EmailPage() {
             studentName: selectedStudent?.name,
             courseName: selectedStudent?.course || 'Course',
             paymentType: selectedPaymentType,
-            amountPaid: selectedEmailType === 'payment_confirmation' ? getPaymentAmount(selectedPaymentType) : (selectedStudent?.amountPaid || 0),
+            amountPaid:
+              selectedEmailType === 'payment_confirmation'
+                ? getPaymentAmount(selectedPaymentType)
+                : (currentSelectedPlanAmounts?.amountPaid ?? selectedStudent?.amountPaid ?? 0),
             paymentDate: new Date().toLocaleDateString('en-GB'),
             startDate: new Date().toISOString().split('T')[0],
-            balanceRemaining: selectedStudent?.balanceRemaining || 0,
-            paymentPlan: selectedStudent?.paymentPlan || 'Select a plan',
+            balanceRemaining: currentSelectedPlanAmounts?.balanceRemaining ?? selectedStudent?.balanceRemaining ?? 0,
+            paymentPlan: currentSelectedPlan,
             resumptionDate: new Date().toISOString().split('T')[0],
             lastProgress: selectedStudent?.lastProgress || 'Not started',
           },
@@ -215,15 +260,45 @@ export function EmailPage() {
             />
           </div>
           <div className="relative w-full sm:w-auto">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <svg
+                className="h-4 w-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 4h18M7 12h10m-7 8h4"
+                />
+              </svg>
+            </div>
             <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value as "latest" | "name")}
+              aria-label="Sort students"
+              className="w-full appearance-none pl-10 pr-10 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
             >
-              <option value="default">Default</option>
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
+              <option value="latest">Last to join</option>
+              <option value="name">By name</option>
             </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+              <svg
+                className="h-4 w-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
           </div>
         </div>
 
@@ -253,6 +328,10 @@ export function EmailPage() {
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {currentStudents.map((student, index) => (
+              (() => {
+                const currentPlan = getStudentPaymentPlan(student.originalId);
+
+                return (
               <div
                 key={student.id}
                 className="p-4 sm:p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
@@ -278,8 +357,13 @@ export function EmailPage() {
                       <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">
                         {student.email}
                       </div>
-                      <div className="text-xs text-gray-400 dark:text-gray-500 truncate">
-                        {student.course} - {student.paymentPlan}
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <div className="text-xs text-gray-400 dark:text-gray-500 truncate">
+                          {student.course}
+                        </div>
+                        <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${getPaymentPlanBadgeClasses(currentPlan)}`}>
+                          {currentPlan}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -294,6 +378,8 @@ export function EmailPage() {
                   </button>
                 </div>
               </div>
+                );
+              })()
             ))}
           </div>
 

@@ -4,29 +4,38 @@ import React, { useState } from "react";
 interface PaymentFormData {
   name: string;
   email: string;
-  phone: string;
   amount: string;
-  paymentDate: string;
-  paymentType: string;
   proofImage: File | null;
 }
+
+type SubmissionState =
+  | { type: "success"; message: string }
+  | { type: "error"; message: string }
+  | null;
+
+const inputClassName =
+  "w-full rounded-2xl border border-stone-200 bg-white px-4 py-3.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-[#9f0712] focus:ring-4 focus:ring-[#9f0712]/10";
 
 export function PaymentUploadForm() {
   const [formData, setFormData] = useState<PaymentFormData>({
     name: "",
     email: "",
-    phone: "",
     amount: "",
-    paymentDate: "",
-    paymentType: "proof_submission",
     proofImage: null,
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState("");
+  const [submissionState, setSubmissionState] = useState<SubmissionState>(null);
+  const [fileInputKey, setFileInputKey] = useState(0);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name } = e.target;
+    let { value } = e.target;
+
+    if (name === "amount") {
+      value = value.replace(/\D/g, "");
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -43,23 +52,25 @@ export function PaymentUploadForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    window.scrollTo({ top: 0, behavior: "smooth" });
     
     if (!formData.proofImage) {
-      setSubmitMessage("Please upload a payment proof image");
+      setSubmissionState({
+        type: "error",
+        message: "Please upload your proof of payment before submitting.",
+      });
       return;
     }
 
     setIsSubmitting(true);
-    setSubmitMessage("");
+    setSubmissionState(null);
 
     try {
       const formDataToSubmit = new FormData();
       formDataToSubmit.append('name', formData.name);
       formDataToSubmit.append('email', formData.email);
-      formDataToSubmit.append('phone', formData.phone);
       formDataToSubmit.append('amount', formData.amount);
-      formDataToSubmit.append('paymentDate', formData.paymentDate);
-      formDataToSubmit.append('paymentType', formData.paymentType);
+      formDataToSubmit.append('paymentType', 'proof_submission');
       formDataToSubmit.append('proofImage', formData.proofImage);
 
       const response = await fetch('/api/payment-receipts', {
@@ -67,161 +78,196 @@ export function PaymentUploadForm() {
         body: formDataToSubmit,
       });
 
+      const result = await response.json().catch(() => null);
+
       if (response.ok) {
-        setSubmitMessage("Payment proof submitted successfully!");
+        setSubmissionState({
+          type: "success",
+          message:
+            "Payment proof submitted successfully. Our team will review it in the payment checker.",
+        });
         setFormData({
           name: "",
           email: "",
-          phone: "",
           amount: "",
-          paymentDate: "",
-          paymentType: "proof_submission",
           proofImage: null,
         });
+        setFileInputKey((prev) => prev + 1);
       } else {
-        setSubmitMessage("Failed to submit payment proof. Please try again.");
+        setSubmissionState({
+          type: "error",
+          message: result?.error || "Failed to submit payment proof. Please try again.",
+        });
       }
-    } catch (error) {
-      setSubmitMessage("An error occurred. Please try again.");
+    } catch {
+      setSubmissionState({
+        type: "error",
+        message: "An error occurred. Please try again.",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
-      <div className="p-6">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl text-gray-900 dark:text-white mb-2">Payment Proof Upload</h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Submit your payment proof for verification
-              </p>
-            </div>
-            <button
-              onClick={() => window.history.back()}
-              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors duration-200"
+    <div className="min-h-screen bg-[#f7f0f0] text-white">
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(120,120,120,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(120,120,120,0.12)_1px,transparent_1px)] bg-[size:72px_72px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(159,7,18,0.12),_transparent_28%),radial-gradient(circle_at_bottom_left,_rgba(0,0,0,0.08),_transparent_30%)]" />
+        <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+          {submissionState ? (
+            <div
+              aria-live="polite"
+              className={`mb-6 rounded-[26px] border px-5 py-4 shadow-sm sm:px-6 ${
+                submissionState.type === "success"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+                  : "border-rose-200 bg-rose-50 text-rose-800"
+              }`}
             >
-              Exit Page
-            </button>
+              <p className="text-sm font-semibold">{submissionState.message}</p>
+            </div>
+          ) : null}
+
+          <div className="grid gap-8 lg:grid-cols-[1.05fr_1fr]">
+            <div className="space-y-6 rounded-[30px] border border-[#9f0712]/15 bg-white/85 p-6 text-slate-900 shadow-[0_20px_60px_rgba(159,7,18,0.08)] backdrop-blur sm:p-8">
+              <div className="inline-flex items-center rounded-full border border-[#9f0712]/15 bg-[#9f0712] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.24em] text-white">
+                Tech Trailblazer Academy
+              </div>
+
+              <div className="space-y-5">
+                <div className="inline-flex bg-[#7f000a] px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-white shadow-lg shadow-[#7f000a]/20">
+                  Payment Proof Submission
+                </div>
+                <div className="space-y-3">
+                  <h1 className="text-4xl font-black uppercase tracking-tight text-[#9f0712] sm:text-5xl lg:text-6xl">
+                    Receipt <span className="text-slate-950">Upload</span>
+                  </h1>
+                  <div className="inline-flex border-2 border-slate-900 bg-white px-5 py-2 text-lg font-black uppercase tracking-wide text-slate-950">
+                    Minimal Form
+                  </div>
+                </div>
+                <p className="max-w-2xl text-sm leading-7 text-slate-700 sm:text-base">
+                  Submit your name, your registered email, amount paid, and a clear proof of payment.
+                  Your receipt goes directly to our review team.
+                </p>
+              </div>
+
+              <div className="rounded-[28px] bg-[linear-gradient(135deg,#a30713_0%,#540107_100%)] p-5 text-white shadow-xl shadow-[#9f0712]/20">
+                <div className="mb-4 inline-flex rounded-full bg-black px-5 py-2 text-sm font-bold uppercase tracking-wide text-white">
+                  Required
+                </div>
+                <div className="space-y-3 text-sm leading-6 text-white/90 sm:text-base">
+                  <p>Use the same email address from registration.</p>
+                  <p>Enter the exact amount paid.</p>
+                  <p>Upload one clear image screenshot or receipt file.</p>
+                  <p>Only these 4 fields are needed for review.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-[30px] border border-[#9f0712]/10 bg-white p-5 text-slate-900 shadow-[0_24px_80px_rgba(15,23,42,0.08)] sm:p-8">
+              <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9f0712]">
+                    Payment Upload
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                    Submit proof of payment
+                  </h2>
+                </div>
+                <p className="text-sm text-slate-500">
+                  All fields are required
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <section className="space-y-5">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">Receipt Details</p>
+                    <p className="mt-1 text-sm text-slate-500">Only 4 details are required.</p>
+                  </div>
+
+                  <div className="grid gap-5">
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-slate-800">
+                        Full Name *
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        required
+                        className={inputClassName}
+                        placeholder="Enter your full name"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-slate-800">
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                        className={inputClassName}
+                        placeholder="Enter your registered email"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-slate-800">
+                        Amount Paid *
+                      </label>
+                      <input
+                        type="text"
+                        name="amount"
+                        value={formData.amount}
+                        onChange={handleInputChange}
+                        required
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        autoComplete="off"
+                        className={inputClassName}
+                        placeholder="Enter amount paid (numbers only)"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-slate-800">
+                        Proof of Payment *
+                      </label>
+                      <div className="rounded-[24px] border border-dashed border-stone-300 bg-[#faf6f6] p-4">
+                        <input
+                          key={fileInputKey}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          required
+                          className="w-full text-sm text-slate-700 file:mr-4 file:rounded-full file:border-0 file:bg-[#9f0712] file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white hover:file:bg-[#7f000a]"
+                        />
+                        <p className="mt-3 text-xs text-slate-500">
+                          Upload a clear image screenshot or receipt proof.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="inline-flex w-full items-center justify-center rounded-2xl bg-[#9f0712] px-5 py-4 text-sm font-semibold text-white transition hover:bg-[#7f000a] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSubmitting ? "Submitting receipt..." : "Submit Payment Proof"}
+                </button>
+              </form>
+            </div>
           </div>
         </div>
-
-        <div className="max-w-2xl mx-auto">
-          {/* Upload Form */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your full name"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your email"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your phone number"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Payment Amount (₦)
-                </label>
-                <input
-                  type="number"
-                  name="amount"
-                  value={formData.amount}
-                  onChange={handleInputChange}
-                  required
-                  min="0"
-                  step="0.01"
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter amount paid"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Payment Date
-                </label>
-                <input
-                  type="date"
-                  name="paymentDate"
-                  value={formData.paymentDate}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Payment Proof Image
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? "Submitting..." : "Submit Payment Proof"}
-              </button>
-            </form>
-
-            {submitMessage && (
-              <div className={`mt-4 p-3 rounded-lg text-sm ${
-                submitMessage.includes("successfully") 
-                  ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" 
-                  : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-              }`}>
-                {submitMessage}
-              </div>
-            )}
-          </div>
-
-                  </div>
       </div>
     </div>
   );

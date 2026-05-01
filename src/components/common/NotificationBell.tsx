@@ -10,7 +10,7 @@ export function NotificationBell() {
 
   const handleNotificationClick = () => {
     // Redirect to payment checker page
-    router.push('/admin/payment-checker');
+    router.push('/email-portal/payment-checker');
   };
 
   const handleRefresh = async (e: React.MouseEvent) => {

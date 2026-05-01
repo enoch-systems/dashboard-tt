@@ -8,22 +8,33 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJ
 
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
+function normalizeEmail(value: string) {
+  return value.trim().toLowerCase();
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
-    const phone = formData.get('phone') as string;
-    const amount = formData.get('amount') as string;
-    const paymentDate = formData.get('paymentDate') as string;
+    const amountRaw = (formData.get('amount') as string)?.trim();
     const paymentType = formData.get('paymentType') as string || 'proof_submission';
     const proofImage = formData.get('proofImage') as File;
+    const amountIsNumeric = /^\d+$/.test(amountRaw || '');
+    const amount = Number.parseInt(amountRaw || '', 10);
 
     // Validate required fields
-    if (!name || !email || !amount || !paymentDate || !proofImage) {
+    if (!name || !email || !amountRaw || !proofImage) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Name, email, amount, and proof image are required' },
+        { status: 400 }
+      );
+    }
+
+    if (!amountIsNumeric || !Number.isFinite(amount) || amount < 0) {
+      return NextResponse.json(
+        { error: 'Amount must contain numbers only.' },
         { status: 400 }
       );
     }
@@ -38,14 +49,14 @@ export async function POST(request: NextRequest) {
 
     // Upload image to Cloudinary
     const cloudinaryResult = await uploadImageToCloudinary(proofImage);
-    
+
+    const normalizedEmail = normalizeEmail(email);
     // Create payment receipt record
     const paymentReceipt = {
       student_name: name,
-      email,
-      phone: phone || undefined,
-      amount: parseFloat(amount),
-      payment_date: paymentDate,
+      email: normalizedEmail,
+      amount,
+      payment_date: new Date().toISOString().split('T')[0],
       payment_type: paymentType,
       status: 'pending',
       cloudinary_public_id: cloudinaryResult.publicId,

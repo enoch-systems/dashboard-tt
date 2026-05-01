@@ -1,8 +1,10 @@
 import { supabase } from './supabase';
 import type { Student as SupabaseStudent } from '@/types/database';
+import { getPublicStudentId } from './studentId';
 
 export interface Student {
   id: number;
+  publicStudentId: string;
   name: string;
   email: string;
   phone: string;
@@ -29,6 +31,7 @@ export interface Student {
 function mapSupabaseStudent(student: SupabaseStudent, index: number): Student {
   return {
     id: index + 1,
+    publicStudentId: getPublicStudentId(student.name, student.id, student.public_student_id),
     name: student.name,
     email: student.email,
     phone: student.phone,
@@ -75,7 +78,6 @@ export async function searchStudents(searchTerm: string): Promise<Student[]> {
   const { data, error } = await supabase
     .from('students')
     .select('*')
-    .or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,course.ilike.%${searchTerm}%`)
     .order('name', { ascending: true });
 
   if (error) {
@@ -87,7 +89,18 @@ export async function searchStudents(searchTerm: string): Promise<Student[]> {
     return [];
   }
 
-  return data.map(mapSupabaseStudent);
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+
+  return data
+    .map(mapSupabaseStudent)
+    .filter((student) => {
+      return (
+        student.name.toLowerCase().includes(normalizedSearchTerm) ||
+        student.email.toLowerCase().includes(normalizedSearchTerm) ||
+        student.course.toLowerCase().includes(normalizedSearchTerm) ||
+        student.publicStudentId.toLowerCase().includes(normalizedSearchTerm)
+      );
+    });
 }
 
 export async function getStudentById(id: string): Promise<Student | null> {
@@ -132,8 +145,11 @@ export async function getStudentById(id: string): Promise<Student | null> {
       throw new Error(`Failed to fetch student: ${err.message}`);
     } else if (typeof err === 'object' && err !== null) {
       // Handle object errors that might not be Error instances
-      const errorObj = err as any;
-      const message = errorObj.message || errorObj.error || JSON.stringify(err);
+      const errorObj = err as Record<string, unknown>;
+      const message =
+        (typeof errorObj.message === "string" && errorObj.message) ||
+        (typeof errorObj.error === "string" && errorObj.error) ||
+        JSON.stringify(err);
       throw new Error(`Failed to fetch student: ${message}`);
     } else {
       throw new Error('Failed to fetch student: Unknown error occurred');

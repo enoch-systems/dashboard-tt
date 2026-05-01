@@ -6,6 +6,41 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJ
 
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
+function getSupabaseErrorMessage(error: unknown) {
+  if (!error || typeof error !== 'object') {
+    return '';
+  }
+
+  const errorRecord = error as {
+    message?: string;
+    details?: string;
+    hint?: string;
+    code?: string;
+  };
+
+  return [
+    errorRecord.code,
+    errorRecord.message,
+    errorRecord.details,
+    errorRecord.hint,
+  ]
+    .filter(Boolean)
+    .join(' | ')
+    .toLowerCase();
+}
+
+function isOptionalViewedReceiptError(error: unknown) {
+  const message = getSupabaseErrorMessage(error);
+
+  return (
+    !message ||
+    message.includes('viewed_payment_receipts') ||
+    message.includes('does not exist') ||
+    message.includes('permission denied') ||
+    message.includes('not found')
+  );
+}
+
 export interface PaymentReceiptData {
   id: string;
   student_name: string;
@@ -109,6 +144,10 @@ export async function getPendingPaymentReceiptsCount(): Promise<number> {
 
 export async function markReceiptAsViewed(receiptId: string, userId: string): Promise<boolean> {
   try {
+    if (!receiptId || !userId) {
+      return false;
+    }
+
     const { error } = await supabaseAdmin
       .from('viewed_payment_receipts')
       .insert({
@@ -117,8 +156,16 @@ export async function markReceiptAsViewed(receiptId: string, userId: string): Pr
       });
 
     if (error) {
-      console.error('Error marking receipt as viewed:', JSON.stringify(error, null, 2));
-      console.error('Error details:', { message: error.message, code: error.code, details: error.details, hint: error.hint });
+      if (isOptionalViewedReceiptError(error)) {
+        return false;
+      }
+
+      console.error('Error marking receipt as viewed:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
       return false;
     }
 
@@ -131,13 +178,26 @@ export async function markReceiptAsViewed(receiptId: string, userId: string): Pr
 
 export async function getViewedReceipts(userId: string): Promise<Set<string>> {
   try {
+    if (!userId) {
+      return new Set();
+    }
+
     const { data, error } = await supabaseAdmin
       .from('viewed_payment_receipts')
       .select('receipt_id')
       .eq('user_id', userId);
 
     if (error) {
-      console.error('Error getting viewed receipts:', error);
+      if (isOptionalViewedReceiptError(error)) {
+        return new Set();
+      }
+
+      console.error('Error getting viewed receipts:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
       return new Set();
     }
 

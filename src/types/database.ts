@@ -131,6 +131,7 @@ export interface Database {
       students: {
         Row: {
           id: string
+          public_student_id: string | null
           name: string
           email: string
           phone: string
@@ -156,6 +157,7 @@ export interface Database {
         }
         Insert: {
           id?: string
+          public_student_id?: string | null
           name: string
           email: string
           phone: string
@@ -181,6 +183,7 @@ export interface Database {
         }
         Update: {
           name?: string
+          public_student_id?: string | null
           email?: string
           phone?: string
           course?: string

@@ -1,15 +1,18 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PaymentReceiptData, fetchPaymentReceipts, updatePaymentReceiptStatus } from "@/lib/paymentReceiptService";
 import { useNotifications } from "@/context/NotificationContext";
 
 export function PaymentChecker() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [paymentReceipts, setPaymentReceipts] = useState<PaymentReceiptData[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<PaymentReceiptData | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [dateFilter, setDateFilter] = useState("default");
+  const [sortOption, setSortOption] = useState<"latest" | "name">("latest");
   const [loading, setLoading] = useState(true);
   const { viewedRequests, markAsViewed } = useNotifications();
   const itemsPerPage = 20;
@@ -31,21 +34,36 @@ export function PaymentChecker() {
     fetchReceipts();
   }, []);
 
+  useEffect(() => {
+    const receiptId = searchParams.get("receiptId");
+    if (!receiptId || paymentReceipts.length === 0) {
+      return;
+    }
+
+    const targetReceipt = paymentReceipts.find((receipt) => receipt.id === receiptId);
+    if (!targetReceipt) {
+      return;
+    }
+
+    void handleImageClick(targetReceipt);
+  }, [searchParams, paymentReceipts]);
+
   const filteredRequests = paymentReceipts.filter(
     (request) =>
       request.student_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (request.phone && request.phone.includes(searchTerm))
+      request.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  const unreadPendingCount = paymentReceipts.filter(
+    (request) => request.status === "pending" && !viewedRequests.has(request.id),
+  ).length;
 
-  // Sort by date/time
+  // Sort requests by latest submission or by student name
   const sortedRequests = [...filteredRequests].sort((a, b) => {
-    if (dateFilter === "newest") {
+    if (sortOption === "latest") {
       return new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime();
-    } else if (dateFilter === "oldest") {
-      return new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime();
     }
-    return 0; // default - no sorting
+
+    return a.student_name.localeCompare(b.student_name);
   });
 
   // Pagination logic
@@ -74,7 +92,7 @@ export function PaymentChecker() {
   // Reset to page 1 when search or filter changes
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, dateFilter]);
+  }, [searchTerm, sortOption]);
 
   const handleStatusChange = async (requestId: string, newStatus: 'approved' | 'rejected') => {
     const success = await updatePaymentReceiptStatus(requestId, newStatus);
@@ -88,10 +106,8 @@ export function PaymentChecker() {
   const handleImageClick = async (request: PaymentReceiptData) => {
     setSelectedRequest(request);
     setShowImageModal(true);
-    // Mark this request as viewed using shared context (now async)
-    await markAsViewed(parseInt(request.id));
-    // Force a re-render by updating state
-    setPaymentReceipts(prev => [...prev]);
+    await markAsViewed(request.id);
+    router.replace("/email-portal/payment-checker");
   };
 
   const getStatusColor = (status: string) => {
@@ -105,12 +121,34 @@ export function PaymentChecker() {
     }
   };
 
+  const formatMessageDate = (value: string) =>
+    new Date(value).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+
+  const formatMessageTime = (value: string) =>
+    new Date(value).toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    });
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       <div className="p-4 sm:p-6">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl text-gray-900 dark:text-white mb-2">Payment Checker</h1>
+          <div className="mb-2 flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl text-gray-900 dark:text-white">Payment Checker</h1>
+            {unreadPendingCount > 0 ? (
+              <span className="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700 dark:bg-red-900/40 dark:text-red-200">
+                {unreadPendingCount} new message{unreadPendingCount > 1 ? "s" : ""}
+              </span>
+            ) : null}
+          </div>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             Review and manage payment proof submissions
           </p>
@@ -137,21 +175,51 @@ export function PaymentChecker() {
             <input
               type="text"
               className="block w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
-              placeholder="Search by name, email, or phone..."
+              placeholder="Search by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <div className="relative w-full sm:w-auto">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <svg
+                className="h-4 w-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 4h18M7 12h10m-7 8h4"
+                />
+              </svg>
+            </div>
             <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value as "latest" | "name")}
+              aria-label="Sort payment requests"
+              className="w-full appearance-none pl-10 pr-10 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
             >
-              <option value="default">Default</option>
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
+              <option value="latest">Last to join</option>
+              <option value="name">By name</option>
             </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+              <svg
+                className="h-4 w-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
           </div>
         </div>
 
@@ -175,13 +243,10 @@ export function PaymentChecker() {
                       <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 truncate">
                         {request.email}
                       </div>
-                      <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">
-                        Phone: {request.phone}
-                      </div>
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 w-full sm:w-auto">
-                    {!viewedRequests.has(parseInt(request.id)) && (
+                    {!viewedRequests.has(request.id) && (
                       <div className="text-amber-600 dark:text-amber-400 text-xs font-medium animate-bounce text-center sm:text-left">
                         New message!
                       </div>
@@ -270,7 +335,7 @@ export function PaymentChecker() {
             <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Payment Proof - {selectedRequest.student_name}
+                  Payment proof sent from {selectedRequest.student_name}
                 </h3>
                 <button
                   onClick={() => setShowImageModal(false)}
@@ -285,24 +350,24 @@ export function PaymentChecker() {
               <div className="mb-3 sm:mb-4">
                 <div className="grid grid-cols-1 gap-3 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Amount:</span>
+                    <span className="text-gray-500 dark:text-gray-400">Amount Paid:</span>
                     <span className="font-medium text-gray-900 dark:text-white">₦{selectedRequest.amount.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Payment Date:</span>
-                    <span className="font-medium text-gray-900 dark:text-white text-right">{selectedRequest.payment_date}</span>
+                    <span className="text-gray-500 dark:text-gray-400">Message Received On:</span>
+                    <span className="font-medium text-gray-900 dark:text-white text-right">
+                      {formatMessageDate(selectedRequest.submitted_at)}
+                    </span>
                   </div>
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Email:</span>
                     <div className="font-medium text-gray-900 dark:text-white break-all mt-1">{selectedRequest.email}</div>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Phone:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">{selectedRequest.phone}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Submitted:</span>
-                    <span className="font-medium text-gray-900 dark:text-white text-right">{selectedRequest.submitted_at}</span>
+                    <span className="text-gray-500 dark:text-gray-400">Message Sending Time:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {formatMessageTime(selectedRequest.submitted_at)}
+                    </span>
                   </div>
                 </div>
               </div>

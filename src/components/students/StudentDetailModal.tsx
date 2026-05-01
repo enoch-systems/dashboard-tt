@@ -9,6 +9,51 @@ interface StudentDetailModalProps {
   studentId: string;
 }
 
+function DetailCard({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: React.ReactNode;
+  accent?: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/70">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+        {label}
+      </p>
+      <p className={`mt-2 text-sm font-semibold ${accent || "text-slate-900 dark:text-white"}`}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/80">
+      <div className="mb-4">
+        <h5 className="text-sm font-semibold text-slate-900 dark:text-white">
+          {title}
+        </h5>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          {description}
+        </p>
+      </div>
+      {children}
+    </section>
+  );
+}
+
 export function StudentDetailModal({ isOpen, onClose, studentId }: StudentDetailModalProps) {
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(false);
@@ -37,9 +82,11 @@ export function StudentDetailModal({ isOpen, onClose, studentId }: StudentDetail
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm">
         <div className="flex min-h-screen items-center justify-center p-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="rounded-3xl border border-white/10 bg-slate-900/90 p-8">
+            <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-400"></div>
+          </div>
         </div>
       </div>
     );
@@ -47,11 +94,11 @@ export function StudentDetailModal({ isOpen, onClose, studentId }: StudentDetail
 
   if (error) {
     return (
-      <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm">
         <div className="flex min-h-screen items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-800">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
                 <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -116,219 +163,159 @@ export function StudentDetailModal({ isOpen, onClose, studentId }: StudentDetail
       : "N/A";
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-start justify-center p-4 pt-34">
-        <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={onClose}></div>
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-7xl w-full h-[85vh] max-h-[85vh] p-4 lg:p-6 overflow-hidden">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Student Details
-            </h3>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm">
+      <div className="flex min-h-screen items-start justify-center p-4 py-8 lg:p-8">
+        <div className="fixed inset-0 transition-opacity" onClick={onClose}></div>
+        <div className="relative h-[92vh] max-h-[92vh] w-full max-w-6xl overflow-hidden rounded-[30px] border border-slate-200 bg-slate-100 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+          <div className="border-b border-slate-200 bg-white px-5 py-5 dark:border-slate-700 dark:bg-slate-900/95 lg:px-8">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+                  Student Record
+                </p>
+                <h3 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
+                  View Details
+                </h3>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  Professional summary of the student application and current payment status.
+                </p>
+              </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                className="rounded-full border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
+            </div>
           </div>
 
-          <div className="overflow-y-auto h-[calc(85vh-120px)] space-y-4">
-            {/* Student Info */}
-            <div className="flex items-center gap-4 pb-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-600 text-white text-lg font-medium">
+          <div className="h-[calc(92vh-150px)] overflow-y-auto p-5 lg:p-8">
+            <div className="space-y-6">
+              <div className="overflow-hidden rounded-[28px] bg-slate-950 text-white">
+                <div className="bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.35),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.18),_transparent_35%)] px-5 py-6 lg:px-8">
+                  <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 text-xl font-semibold text-white">
                 {student.name
                   .split(" ")
                   .map((n) => n[0])
                   .join("")
                   .toUpperCase()}
               </div>
-              <div className="flex-1">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {student.name}
-                </h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{student.email}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">ID: {student.originalId}</p>
-              </div>
-              <div className="text-right">
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                  student.status === 'Confirmed' 
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                    : student.status === 'Awaiting'
-                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-                }`}>
-                  {student.status}
-                </span>
-              </div>
-            </div>
-
-            {/* Course & Registration */}
-            <div>
-              <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                Course & Registration Information
-              </h5>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    Course
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{student.course}</p>
+                      <div className="min-w-0">
+                        <h4 className="text-2xl font-semibold text-white">
+                          {student.name}
+                        </h4>
+                        <p className="mt-1 text-sm text-slate-300">{student.email}</p>
+                        <div className="mt-3 inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold tracking-[0.2em] text-blue-100">
+                          {student.publicStudentId}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-3 lg:items-end">
+                      <span className={`inline-flex w-fit rounded-full px-3 py-1.5 text-xs font-semibold ${
+                        student.status === 'Confirmed' 
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                          : student.status === 'Awaiting'
+                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                          : 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200'
+                      }`}>
+                        {student.status}
+                      </span>
+                      <p className="text-sm text-slate-300">
+                        Course: <span className="font-medium text-white">{student.course}</span>
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    Registration Date
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{student.regDate}</p>
-                  {student.regTime && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      Time: {student.regTime}
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <DetailCard label="Student ID" value={student.publicStudentId} accent="text-blue-700 dark:text-blue-300" />
+                <DetailCard label="Registration Date" value={student.regDate} />
+                <DetailCard label="Payment Plan" value={normalizedPaymentPlan} />
+                <DetailCard label="Balance Remaining" value={balanceRemainingDisplay} accent="text-amber-700 dark:text-amber-300" />
+              </div>
+
+              <Section
+                title="Registration Overview"
+                description="Core timeline and enrollment record information."
+              >
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  <DetailCard label="Course" value={student.course} />
+                  <DetailCard label="Learning Track" value={student.learningTrack} />
+                  <DetailCard label="Registration Time" value={student.regTime || "Not recorded"} />
+                  <DetailCard label="Amount Paid" value={amountPaidDisplay} accent="text-emerald-700 dark:text-emerald-300" />
+                  <DetailCard label="Timestamp" value={student.timestamp} />
+                  <DetailCard label="Status" value={student.status} />
+                </div>
+              </Section>
+
+              <Section
+                title="Personal Information"
+                description="Identity and location details supplied at registration."
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <DetailCard label="Full Name" value={student.name} />
+                  <DetailCard label="Sex" value={student.gender} />
+                  <DetailCard label="State of Origin" value={student.stateOfResidence} />
+                  <DetailCard label="Scholarship Interest" value={student.wantsScholarship} />
+                </div>
+              </Section>
+
+              <Section
+                title="Contact Information"
+                description="Primary channels for communication and follow-up."
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <DetailCard label="Email Address" value={<span className="break-all">{student.email}</span>} />
+                  <DetailCard label="Phone / WhatsApp" value={student.phone} />
+                  <div className="md:col-span-2">
+                    <DetailCard label="How the Student Heard About Us" value={student.howDidYouHear} />
+                  </div>
+                </div>
+              </Section>
+
+              <Section
+                title="Readiness & Motivation"
+                description="Background context for onboarding and student follow-up."
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <DetailCard label="Employment Status" value={student.currentEmploymentStatus} />
+                  <DetailCard label="Laptop Availability" value={student.hasLaptopAndInternet} />
+                  <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/70">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                      Why Learn This Skill
                     </p>
-                  )}
+                    <p className="mt-3 text-sm leading-7 text-slate-700 dark:text-slate-300">
+                      {student.whyLearnThisSkill}
+                    </p>
+                  </div>
+                  {student.lastProgress ? (
+                    <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/70">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                        Last Progress Update
+                      </p>
+                      <p className="mt-3 text-sm leading-7 text-slate-700 dark:text-slate-300">
+                        {student.lastProgress}
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    Timestamp
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{student.timestamp}</p>
-                </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    Payment Plan
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{normalizedPaymentPlan}</p>
-                </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    Amount Paid
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{amountPaidDisplay}</p>
-                </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    Balance Remaining
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{balanceRemainingDisplay}</p>
-                </div>
-              </div>
+              </Section>
             </div>
-
-            {/* Personal Details */}
-            <div>
-              <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                Personal Information
-              </h5>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    Gender
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{student.gender}</p>
-                </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    State of Residence
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{student.stateOfResidence}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Academic & Career Details */}
-            <div>
-              <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                Academic & Career Information
-              </h5>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    Learning Track
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{student.learningTrack}</p>
-                </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    Employment Status
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{student.currentEmploymentStatus}</p>
-                </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    Has Laptop & Internet
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{student.hasLaptopAndInternet}</p>
-                </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 lg:col-span-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    Scholarship Interest
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{student.wantsScholarship}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Contact Details */}
-            <div>
-              <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                Contact Information
-              </h5>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    Phone
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{student.phone}</p>
-                </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    Email
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white break-all">{student.email}</p>
-                </div>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 md:col-span-2">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    How Did You Hear About Us
-                  </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{student.howDidYouHear}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Motivation */}
-            <div>
-              <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                Why Learn This Skill
-              </h5>
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                  {student.whyLearnThisSkill}
-                </p>
-              </div>
-            </div>
-
-            {/* Progress Information */}
-            {student.lastProgress && (
-              <div>
-                <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                  Progress Information
-                </h5>
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {student.lastProgress}
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
 
-          <div className="mt-6 flex justify-end">
+          <div className="border-t border-slate-200 bg-white px-5 py-4 dark:border-slate-700 dark:bg-slate-900 lg:px-8">
+            <div className="flex justify-end">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors duration-200"
+                className="inline-flex items-center rounded-2xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500"
             >
               Close
             </button>
+            </div>
           </div>
         </div>
       </div>

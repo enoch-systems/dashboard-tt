@@ -3,9 +3,9 @@ import { StudentDatabaseTable } from "@/components/students/StudentDatabaseTable
 import React from "react";
 
 export const metadata: Metadata = {
-  title:
-    "Student Database | TT Academy - Next.js Dashboard Template",
-  description: "Student Database Management System for TT Academy",
+  title: "Admin Dashboard",
+  description:
+    "Manage student registrations, records, and operations from the TT Academy admin dashboard.",
 };
 
 export default function StudentDatabase() {

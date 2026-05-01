@@ -7,9 +7,8 @@ import { useNotifications } from "@/context/NotificationContext";
 
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifying, setNotifying] = useState(true);
   const [pendingReceipts, setPendingReceipts] = useState<PaymentReceiptData[]>([]);
-  const { viewedRequests, markAsViewed, pendingCount } = useNotifications();
+  const { viewedRequests, pendingCount } = useNotifications();
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -21,11 +20,6 @@ export default function NotificationDropdown() {
 
   const handleClick = () => {
     toggleDropdown();
-    setNotifying(false);
-    // Mark all current notifications as viewed
-    pendingReceipts.forEach((request: PaymentReceiptData) => {
-      markAsViewed(parseInt(request.id));
-    });
   };
 
   useEffect(() => {
@@ -34,10 +28,9 @@ export default function NotificationDropdown() {
       try {
         const receipts = await fetchPaymentReceipts('pending', 10);
         const unviewedReceipts = receipts.filter(request => 
-          !viewedRequests.has(parseInt(request.id))
+          !viewedRequests.has(request.id)
         );
         setPendingReceipts(unviewedReceipts);
-        setNotifying(unviewedReceipts.length > 0);
       } catch (error) {
         console.error('Error fetching pending receipts:', error);
       }
@@ -54,7 +47,7 @@ export default function NotificationDropdown() {
         {/* Notification indicator */}
         <span
           className={`absolute right-0 top-0.5 z-10 h-2 w-2 rounded-full bg-orange-400 ${
-            !notifying || pendingCount === 0 ? "hidden" : "flex"
+            pendingCount === 0 ? "hidden" : "flex"
           }`}
         >
           <span className="absolute inline-flex w-full h-full bg-orange-400 rounded-full opacity-75 animate-ping"></span>
@@ -119,7 +112,7 @@ export default function NotificationDropdown() {
               {pendingReceipts.map((request: PaymentReceiptData, index: number) => (
                 <li key={request.id} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
                   <Link 
-                    href="/email-portal/payment-checker"
+                    href={`/email-portal/payment-checker?receiptId=${request.id}`}
                     onClick={closeDropdown}
                     className="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
@@ -135,9 +128,6 @@ export default function NotificationDropdown() {
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                           {request.email}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          Phone: {request.phone}
                         </div>
                         <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">
                           Pending review

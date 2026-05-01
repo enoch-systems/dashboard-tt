@@ -26,7 +26,7 @@ export function StudentDatabaseTable() {
   const [showStudentDetailModal, setShowStudentDetailModal] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [dateFilter, setDateFilter] = useState("default");
+  const [sortOption, setSortOption] = useState<"latest" | "name">("latest");
   const itemsPerPage = 20;
   const paymentDropdownRef = useRef<HTMLDivElement>(null);
   const paymentPlanDropdownRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
@@ -70,7 +70,7 @@ export function StudentDatabaseTable() {
       const now = Date.now();
       setEditedPaymentPlans(prev => {
         const filtered = Object.fromEntries(
-          Object.entries(prev).filter(([_, timestamp]) => now - timestamp < 4000)
+          Object.entries(prev).filter(([, timestamp]) => now - timestamp < 4000)
         );
         return filtered;
       });
@@ -159,7 +159,7 @@ export function StudentDatabaseTable() {
         } else {
           setEditMessage({ type: 'error', text: 'Failed to update payment plan. Please try again.' });
         }
-      } catch (error) {
+      } catch {
         setEditMessage({ type: 'error', text: 'Error updating payment plan. Please try again.' });
       }
     }
@@ -199,7 +199,8 @@ export function StudentDatabaseTable() {
       const matchesSearch = 
         student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.course.toLowerCase().includes(searchTerm.toLowerCase());
+        student.course.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.publicStudentId.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesPaymentFilter = 
         selectedPaymentFilter === "All Students" ||
@@ -222,14 +223,13 @@ export function StudentDatabaseTable() {
     { male: 0, female: 0 }
   );
 
-  // Sort by date/time
+  // Sort students by latest join or by name
   const sortedStudents = [...filteredStudents].sort((a, b) => {
-    if (dateFilter === "newest") {
+    if (sortOption === "latest") {
       return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-    } else if (dateFilter === "oldest") {
-      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
     }
-    return 0; // default - no sorting
+
+    return a.name.localeCompare(b.name);
   });
 
   // Pagination logic
@@ -258,7 +258,7 @@ export function StudentDatabaseTable() {
   // Reset to page 1 when search or filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedPaymentFilter, dateFilter]);
+  }, [searchTerm, selectedPaymentFilter, sortOption]);
 
   
   return (
@@ -298,21 +298,51 @@ export function StudentDatabaseTable() {
               <input
                 type="text"
                 className="block w-full pl-10 pr-3 py-3 sm:py-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 text-sm sm:text-base"
-                placeholder="Search by name, email, or course..."
+                placeholder="Search by name, email, course, or student ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <div className="relative w-full sm:w-auto">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg
+                  className="h-4 w-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4h18M7 12h10m-7 8h4"
+                  />
+                </svg>
+              </div>
               <select
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                className="w-full px-4 py-3 sm:py-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white text-sm sm:text-base"
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value as "latest" | "name")}
+                aria-label="Sort students"
+                className="w-full appearance-none pl-10 pr-10 py-3 sm:py-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white text-sm sm:text-base"
               >
-                <option value="default">Default</option>
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
+                <option value="latest">Last to join</option>
+                <option value="name">By name</option>
               </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                <svg
+                  className="h-4 w-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
             </div>
           </div>
         </div>
@@ -457,6 +487,9 @@ export function StudentDatabaseTable() {
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           {student.email}
                         </div>
+                        <div className="mt-1 inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
+                          {student.publicStudentId}
+                        </div>
                       </div>
                     </div>
                     <button 
@@ -464,9 +497,9 @@ export function StudentDatabaseTable() {
                         setSelectedStudentId(student.originalId);
                         setShowStudentDetailModal(true);
                       }}
-                      className="px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 border border-blue-600 hover:border-blue-700 dark:border-blue-400 dark:hover:border-blue-300 rounded transition-colors duration-200"
+                      className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors duration-200 hover:bg-blue-100 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20"
                     >
-                      View Detail
+                      View Details
                     </button>
                   </div>
 
@@ -663,6 +696,9 @@ export function StudentDatabaseTable() {
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         {student.email}
                       </div>
+                      <div className="mt-1 inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
+                        {student.publicStudentId}
+                      </div>
                     </td>
                     <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                       {student.phone}
@@ -763,9 +799,9 @@ export function StudentDatabaseTable() {
                           setSelectedStudentId(student.originalId);
                           setShowStudentDetailModal(true);
                         }}
-                        className="px-2 sm:px-3 py-1 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 border border-blue-600 hover:border-blue-700 dark:border-blue-400 dark:hover:border-blue-300 rounded transition-colors duration-200"
+                        className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors duration-200 hover:bg-blue-100 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20"
                       >
-                        View Detail
+                        View Details
                       </button>
                     </td>
                   </tr>
