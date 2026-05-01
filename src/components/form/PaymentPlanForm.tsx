@@ -1,7 +1,13 @@
 "use client";
 import React, { useState } from 'react';
 import { PaymentPlan } from '@/context/PaymentPlanContext';
-import { PaymentPlanService, StudentData } from '@/utils/paymentPlanService';
+import {
+  PaymentPlanService,
+  StudentData,
+  PAYMENT_PLAN_OPTIONS,
+  PAYMENT_PLAN_PLACEHOLDER,
+  getPaymentPlanAmounts,
+} from '@/utils/paymentPlanService';
 
 interface PaymentPlanFormProps {
   initialData?: Partial<StudentData>;
@@ -17,7 +23,7 @@ export function PaymentPlanForm({ initialData, onSuccess, onError }: PaymentPlan
     course: initialData?.course || '',
     reg_date: initialData?.reg_date || '',
     reg_time: initialData?.reg_time || '',
-    payment_plan: initialData?.payment_plan || 'Select a plan',
+    payment_plan: initialData?.payment_plan || PAYMENT_PLAN_PLACEHOLDER,
     amount_paid: initialData?.amount_paid || 0,
     balance_remaining: initialData?.balance_remaining || 0,
     status: initialData?.status || 'None',
@@ -35,15 +41,23 @@ export function PaymentPlanForm({ initialData, onSuccess, onError }: PaymentPlan
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const paymentPlanOptions: PaymentPlan[] = [
-    'Select a plan',
-    'Fully Paid',
-    '1st installment',
-    '2nd installment'
-  ];
+  const paymentPlanOptions: PaymentPlan[] = [PAYMENT_PLAN_PLACEHOLDER, ...PAYMENT_PLAN_OPTIONS];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    if (name === 'payment_plan') {
+      const paymentPlan = value as PaymentPlan;
+      const paymentAmounts = getPaymentPlanAmounts(paymentPlan);
+
+      setFormData(prev => ({
+        ...prev,
+        payment_plan: paymentPlan,
+        amount_paid: paymentAmounts?.amountPaid ?? 0,
+        balance_remaining: paymentAmounts?.balanceRemaining ?? 0,
+      }));
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -63,7 +77,9 @@ export function PaymentPlanForm({ initialData, onSuccess, onError }: PaymentPlan
         if (!initialData?.id) {
           setFormData(prev => ({
             ...prev,
-            payment_plan: 'Select a plan'
+            payment_plan: PAYMENT_PLAN_PLACEHOLDER,
+            amount_paid: 0,
+            balance_remaining: 0,
           }));
         }
       } else {
@@ -152,7 +168,7 @@ export function PaymentPlanForm({ initialData, onSuccess, onError }: PaymentPlan
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
             {paymentPlanOptions.map(option => (
-              <option key={option} value={option}>
+              <option key={option} value={option} disabled={option === PAYMENT_PLAN_PLACEHOLDER}>
                 {option}
               </option>
             ))}
@@ -259,7 +275,7 @@ export function PaymentPlanForm({ initialData, onSuccess, onError }: PaymentPlan
       <div className="mt-6">
         <button
           type="submit"
-          disabled={isLoading || formData.payment_plan === 'Select a plan'}
+          disabled={isLoading || formData.payment_plan === PAYMENT_PLAN_PLACEHOLDER}
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Saving...' : (initialData?.id ? 'Update Payment Plan' : 'Save Payment Plan')}

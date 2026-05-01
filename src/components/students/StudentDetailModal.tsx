@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { getStudentById, type Student } from "@/data/students";
+import { normalizePaymentPlan } from "@/utils/paymentPlanService";
 
 interface StudentDetailModalProps {
   isOpen: boolean;
@@ -96,6 +97,24 @@ export function StudentDetailModal({ isOpen, onClose, studentId }: StudentDetail
 
   if (!student) return null;
 
+  const normalizedPaymentPlan = normalizePaymentPlan(student.paymentPlan);
+  const amountPaidDisplay =
+    normalizedPaymentPlan === "Fully Paid"
+      ? "₦50,000"
+      : normalizedPaymentPlan === "1st installment"
+      ? "₦30,000"
+      : normalizedPaymentPlan === "2nd installment"
+      ? "₦20,000"
+      : "N/A";
+  const balanceRemainingDisplay =
+    normalizedPaymentPlan === "Fully Paid"
+      ? "₦0"
+      : normalizedPaymentPlan === "1st installment"
+      ? "₦20,000"
+      : normalizedPaymentPlan === "2nd installment"
+      ? "₦0"
+      : "N/A";
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-screen items-start justify-center p-4 pt-34">
@@ -178,19 +197,19 @@ export function StudentDetailModal({ isOpen, onClose, studentId }: StudentDetail
                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                     Payment Plan
                   </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{student.paymentPlan}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{normalizedPaymentPlan}</p>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                     Amount Paid
                   </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">₦{student.amountPaid.toLocaleString()}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{amountPaidDisplay}</p>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                     Balance Remaining
                   </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">₦{student.balanceRemaining.toLocaleString()}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{balanceRemainingDisplay}</p>
                 </div>
               </div>
             </div>

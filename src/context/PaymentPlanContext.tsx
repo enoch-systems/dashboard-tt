@@ -1,8 +1,13 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { PaymentPlanService } from "@/utils/paymentPlanService";
+import { PaymentPlanService, normalizePaymentPlan } from "@/utils/paymentPlanService";
 
-export type PaymentPlan = "Select a plan" | "Fully Paid" | "1st installment" | "2nd installment";
+export type PaymentPlan =
+  | "Select a plan"
+  | "Not Paid Yet"
+  | "Fully Paid"
+  | "1st installment"
+  | "2nd installment";
 
 interface PaymentPlanContextType {
   studentPaymentPlans: { [key: string]: PaymentPlan };
@@ -26,7 +31,7 @@ export function PaymentPlanProvider({ children }: { children: ReactNode }) {
       if (result.success && result.data) {
         const plans: { [key: string]: PaymentPlan } = {};
         result.data.forEach((student: any) => {
-          plans[student.id] = student.payment_plan as PaymentPlan;
+          plans[student.id] = normalizePaymentPlan(student.payment_plan);
         });
         setStudentPaymentPlans(plans);
       }
@@ -57,7 +62,7 @@ export function PaymentPlanProvider({ children }: { children: ReactNode }) {
   };
 
   const getStudentPaymentPlan = (studentId: string): PaymentPlan => {
-    return studentPaymentPlans[studentId] || "Select a plan";
+    return normalizePaymentPlan(studentPaymentPlans[studentId]);
   };
 
   // Load payment plans on component mount

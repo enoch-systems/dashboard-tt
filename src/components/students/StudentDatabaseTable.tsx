@@ -3,6 +3,10 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { fetchStudents, type Student } from "@/data/students";
 import { StudentDetailModal } from "./StudentDetailModal";
 import { usePaymentPlan, PaymentPlan } from "@/context/PaymentPlanContext";
+import {
+  PAYMENT_PLAN_OPTIONS,
+  isLockedPaymentPlan,
+} from "@/utils/paymentPlanService";
 
 export function StudentDatabaseTable() {
   const { updateStudentPaymentPlan, getStudentPaymentPlan } = usePaymentPlan();
@@ -13,7 +17,7 @@ export function StudentDatabaseTable() {
   const [paymentDropdownOpen, setPaymentDropdownOpen] = useState(false);
   const [selectedPaymentFilter, setSelectedPaymentFilter] = useState<string>("All Students");
   const [openPaymentPlanDropdown, setOpenPaymentPlanDropdown] = useState<number | null>(null);
-  const [lockedPaymentPlans, setLockedPaymentPlans] = useState<{ [key: number]: boolean }>({});
+  const [editablePaymentPlans, setEditablePaymentPlans] = useState<{ [key: number]: boolean }>({});
   const [expandedStudentCards, setExpandedStudentCards] = useState<number | null>(null);
   const [editingStudentId, setEditingStudentId] = useState<number | null>(null);
   const [showEditConfirmModal, setShowEditConfirmModal] = useState(false);
@@ -89,6 +93,56 @@ export function StudentDatabaseTable() {
     paymentPlanDropdownRefs.current[studentId] = el;
   }, []);
 
+  const getStudentPlan = useCallback((student: Student): PaymentPlan => {
+    return getStudentPaymentPlan(student.originalId);
+  }, [getStudentPaymentPlan]);
+
+  const isStudentPlanLocked = useCallback((student: Student) => {
+    return isLockedPaymentPlan(getStudentPlan(student)) && !editablePaymentPlans[student.id];
+  }, [editablePaymentPlans, getStudentPlan]);
+
+  const getPaymentPlanBadgeClasses = (plan: PaymentPlan) => {
+    if (plan === "Fully Paid") {
+      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+    }
+
+    if (plan === "1st installment") {
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
+    }
+
+    if (plan === "2nd installment") {
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+    }
+
+    if (plan === "Not Paid Yet") {
+      return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400";
+    }
+
+    return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400";
+  };
+
+  const getAmountPaidDisplay = (plan: PaymentPlan, showInstallmentHint = false) => {
+    if (plan === "Fully Paid") return "₦50,000";
+    if (plan === "1st installment") return "₦30,000";
+    if (plan === "2nd installment" && showInstallmentHint) {
+      return (
+        <div>
+          <div>₦20,000</div>
+          <div className="text-[10px] text-gray-500">+₦30,000<br />1st pay</div>
+        </div>
+      );
+    }
+    if (plan === "2nd installment") return "₦20,000";
+    return "N/A";
+  };
+
+  const getBalanceRemainingDisplay = (plan: PaymentPlan) => {
+    if (plan === "Fully Paid") return "₦0";
+    if (plan === "1st installment") return "₦20,000";
+    if (plan === "2nd installment") return "₦0";
+    return "N/A";
+  };
+
   const handlePaymentPlanChange = async (studentId: number, plan: PaymentPlan) => {
     const student = students.find(s => s.id === studentId);
     if (student) {
@@ -101,7 +155,7 @@ export function StudentDatabaseTable() {
         const success = await updateStudentPaymentPlan(student.originalId, plan);
         if (success) {
           setEditMessage({ type: 'success', text: `Payment plan updated to "${plan}" for ${student.name}` });
-          setLockedPaymentPlans(prev => ({ ...prev, [studentId]: true }));
+          setEditablePaymentPlans(prev => ({ ...prev, [studentId]: false }));
         } else {
           setEditMessage({ type: 'error', text: 'Failed to update payment plan. Please try again.' });
         }
@@ -113,6 +167,11 @@ export function StudentDatabaseTable() {
   };
 
   const handleEditClick = (studentId: number) => {
+    const student = students.find((item) => item.id === studentId);
+    if (!student || !isStudentPlanLocked(student)) {
+      return;
+    }
+
     setEditingStudentId(studentId);
     setShowEditConfirmModal(true);
   };
@@ -120,7 +179,7 @@ export function StudentDatabaseTable() {
   const confirmEdit = () => {
     if (editingStudentId !== null) {
       // Unlock payment plan after editing is confirmed
-      setLockedPaymentPlans(prev => ({ ...prev, [editingStudentId]: false }));
+      setEditablePaymentPlans(prev => ({ ...prev, [editingStudentId]: true }));
       // Open dropdown for immediate editing
       setOpenPaymentPlanDropdown(editingStudentId);
       // Track edited payment plan with timestamp for animation
@@ -317,6 +376,15 @@ export function StudentDatabaseTable() {
                       </button>
                       <button 
                         onClick={() => {
+                          setSelectedPaymentFilter("Not Paid Yet");
+                          setPaymentDropdownOpen(false);
+                        }}
+                        className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        Not Paid Yet
+                      </button>
+                      <button 
+                        onClick={() => {
                           setSelectedPaymentFilter("Fully Paid");
                           setPaymentDropdownOpen(false);
                         }}
@@ -405,23 +473,20 @@ export function StudentDatabaseTable() {
                   {/* Payment Plan - Always Visible */}
                   <div className="mb-3">
                     <div className="relative" ref={setPaymentPlanDropdownRef(student.id)}>
+                      {(() => {
+                        const plan = getStudentPlan(student);
+                        const isLocked = isStudentPlanLocked(student);
+
+                        return (
                       <button
-                        onClick={() => lockedPaymentPlans[student.id] ? null : setOpenPaymentPlanDropdown(openPaymentPlanDropdown === student.id ? null : student.id)}
-                        disabled={lockedPaymentPlans[student.id]}
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold items-center gap-1 relative ${
-                          getStudentPaymentPlan(student.originalId) === "Fully Paid"
-                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                            : getStudentPaymentPlan(student.originalId) === "1st installment"
-                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
-                            : getStudentPaymentPlan(student.originalId) === "2nd installment"
-                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
-                            : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
-                        } ${lockedPaymentPlans[student.id] ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'} transition-opacity duration-200 ${
+                        onClick={() => isLocked ? null : setOpenPaymentPlanDropdown(openPaymentPlanDropdown === student.id ? null : student.id)}
+                        disabled={isLocked}
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold items-center gap-1 relative ${getPaymentPlanBadgeClasses(plan)} ${isLocked ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'} transition-opacity duration-200 ${
                           editedPaymentPlans[student.id] ? 'animate-pulse border-2 border-red-500' : ''
                         }`}
                       >
-                        {getStudentPaymentPlan(student.originalId)}
-                        {getStudentPaymentPlan(student.originalId) === "Select a plan" && (
+                        {plan}
+                        {!isLocked && (
                           <svg 
                             className={`w-3 h-3 ml-1 transition-transform duration-200 ${
                               openPaymentPlanDropdown === student.id ? 'rotate-180' : ''
@@ -444,34 +509,21 @@ export function StudentDatabaseTable() {
                           </svg>
                         )}
                       </button>
+                        );
+                      })()}
                       
-                      {openPaymentPlanDropdown === student.id && !lockedPaymentPlans[student.id] && (
+                      {openPaymentPlanDropdown === student.id && !isStudentPlanLocked(student) && (
                         <div className="absolute top-full left-0 mt-1 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10">
                           <div className="py-1">
-                            <button
-                              onClick={() => handlePaymentPlanChange(student.id, "Select a plan")}
-                              className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                            >
-                              Select a plan
-                            </button>
-                            <button
-                              onClick={() => handlePaymentPlanChange(student.id, "Fully Paid")}
-                              className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                            >
-                              Fully Paid
-                            </button>
-                            <button
-                              onClick={() => handlePaymentPlanChange(student.id, "1st installment")}
-                              className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                            >
-                              1st installment
-                            </button>
-                            <button
-                              onClick={() => handlePaymentPlanChange(student.id, "2nd installment")}
-                              className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                            >
-                              2nd installment
-                            </button>
+                            {PAYMENT_PLAN_OPTIONS.map((plan) => (
+                              <button
+                                key={plan}
+                                onClick={() => handlePaymentPlanChange(student.id, plan)}
+                                className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              >
+                                {plan}
+                              </button>
+                            ))}
                           </div>
                         </div>
                       )}
@@ -524,13 +576,7 @@ export function StudentDatabaseTable() {
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-gray-500 dark:text-gray-400">AMOUNT PAID</span>
                           <span className="text-sm text-gray-900 dark:text-gray-200">
-                            {(() => {
-                              const plan = getStudentPaymentPlan(student.originalId);
-                              if (plan === "Fully Paid") return "₦50,000";
-                              if (plan === "1st installment") return "₦30,000";
-                              if (plan === "2nd installment") return "₦20,000";
-                              return "N/A";
-                            })()}
+                            {getAmountPaidDisplay(getStudentPlan(student))}
                           </span>
                         </div>
                         
@@ -538,13 +584,7 @@ export function StudentDatabaseTable() {
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-gray-500 dark:text-gray-400">BALANCE REMAINING</span>
                           <span className="text-sm text-gray-900 dark:text-gray-200">
-                            {(() => {
-                              const plan = getStudentPaymentPlan(student.originalId);
-                              if (plan === "Fully Paid") return "₦0";
-                              if (plan === "1st installment") return "₦20,000";
-                              if (plan === "2nd installment") return "₦0";
-                              return "N/A";
-                            })()}
+                            {getBalanceRemainingDisplay(getStudentPlan(student))}
                           </span>
                         </div>
                         
@@ -554,10 +594,11 @@ export function StudentDatabaseTable() {
                           <button 
                             onClick={() => handleEditClick(student.id)}
                             className={`${
-                              lockedPaymentPlans[student.id] 
+                              isStudentPlanLocked(student) 
                                 ? 'text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300' 
-                                : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer'
+                                : 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
                             } transition-colors duration-200`}
+                            disabled={!isStudentPlanLocked(student)}
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -639,23 +680,20 @@ export function StudentDatabaseTable() {
                     </td>
                     <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                       <div className="relative" ref={setPaymentPlanDropdownRef(student.id)}>
+                        {(() => {
+                          const plan = getStudentPlan(student);
+                          const isLocked = isStudentPlanLocked(student);
+
+                          return (
                         <button
-                          onClick={() => lockedPaymentPlans[student.id] ? null : setOpenPaymentPlanDropdown(openPaymentPlanDropdown === student.id ? null : student.id)}
-                          disabled={lockedPaymentPlans[student.id]}
-                          className={`inline-flex rounded-full px-2 sm:px-3 py-1 text-xs font-semibold items-center gap-1 relative ${
-                            getStudentPaymentPlan(student.originalId) === "Fully Paid"
-                              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                              : getStudentPaymentPlan(student.originalId) === "1st installment"
-                              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
-                              : getStudentPaymentPlan(student.originalId) === "2nd installment"
-                              ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
-                              : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
-                          } ${lockedPaymentPlans[student.id] ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'} transition-opacity duration-200 ${
+                          onClick={() => isLocked ? null : setOpenPaymentPlanDropdown(openPaymentPlanDropdown === student.id ? null : student.id)}
+                          disabled={isLocked}
+                          className={`inline-flex rounded-full px-2 sm:px-3 py-1 text-xs font-semibold items-center gap-1 relative ${getPaymentPlanBadgeClasses(plan)} ${isLocked ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'} transition-opacity duration-200 ${
                             editedPaymentPlans[student.id] ? 'animate-pulse border-2 border-red-500' : ''
                           }`}
                         >
-                          {getStudentPaymentPlan(student.originalId)}
-                          {getStudentPaymentPlan(student.originalId) === "Select a plan" && (
+                          {plan}
+                          {!isLocked && (
                             <svg 
                               className={`w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2 transition-transform duration-200 ${
                                 openPaymentPlanDropdown === student.id ? 'rotate-180' : ''
@@ -678,70 +716,41 @@ export function StudentDatabaseTable() {
                             </svg>
                           )}
                         </button>
+                          );
+                        })()}
                         
-                        {openPaymentPlanDropdown === student.id && !lockedPaymentPlans[student.id] && (
+                        {openPaymentPlanDropdown === student.id && !isStudentPlanLocked(student) && (
                           <div className="absolute top-full left-0 mt-1 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10">
                             <div className="py-1">
-                              <button
-                                onClick={() => handlePaymentPlanChange(student.id, "Select a plan")}
-                                className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                              >
-                                Select a plan
-                              </button>
-                              <button
-                                onClick={() => handlePaymentPlanChange(student.id, "Fully Paid")}
-                                className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                              >
-                                Fully Paid
-                              </button>
-                              <button
-                                onClick={() => handlePaymentPlanChange(student.id, "1st installment")}
-                                className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                              >
-                                1st installment
-                              </button>
-                              <button
-                                onClick={() => handlePaymentPlanChange(student.id, "2nd installment")}
-                                className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                              >
-                                2nd installment
-                              </button>
+                              {PAYMENT_PLAN_OPTIONS.map((plan) => (
+                                <button
+                                  key={plan}
+                                  onClick={() => handlePaymentPlanChange(student.id, plan)}
+                                  className="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                  {plan}
+                                </button>
+                              ))}
                             </div>
                           </div>
                         )}
                       </div>
                     </td>
                     <td className="px-4 sm:px-6 py-4 text-sm text-gray-900 dark:text-gray-200">
-                      {(() => {
-                        const plan = getStudentPaymentPlan(student.originalId);
-                        if (plan === "Fully Paid") return "₦50,000";
-                        if (plan === "1st installment") return "₦30,000";
-                        if (plan === "2nd installment") return (
-                          <div>
-                            <div>₦20,000</div>
-                            <div className="text-[10px] text-gray-500">+₦30,000<br />1st pay</div>
-                          </div>
-                        );
-                        return "N/A";
-                      })()}
+                      {getAmountPaidDisplay(getStudentPlan(student), true)}
                     </td>
                     <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
-                      {(() => {
-                        const plan = getStudentPaymentPlan(student.originalId);
-                        if (plan === "Fully Paid") return "₦0";
-                        if (plan === "1st installment") return "₦20,000";
-                        if (plan === "2nd installment") return "₦0";
-                        return "N/A";
-                      })()}
+                      {getBalanceRemainingDisplay(getStudentPlan(student))}
                     </td>
                     <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                       <button 
                         onClick={() => handleEditClick(student.id)}
                         className={`${
-                          lockedPaymentPlans[student.id] 
+                          isStudentPlanLocked(student) 
                             ? 'text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300' 
-                            : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer'
+                            : 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
                         } transition-colors duration-200`}
+                        disabled={!isStudentPlanLocked(student)}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />

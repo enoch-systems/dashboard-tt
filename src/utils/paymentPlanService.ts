@@ -1,6 +1,43 @@
 import { supabase } from '@/lib/supabase';
 import { PaymentPlan } from '@/context/PaymentPlanContext';
 
+export const PAYMENT_PLAN_PLACEHOLDER: PaymentPlan = 'Select a plan';
+export const EDITABLE_PAYMENT_PLANS: PaymentPlan[] = ['Not Paid Yet'];
+export const LOCKED_PAYMENT_PLANS: PaymentPlan[] = ['Fully Paid', '1st installment', '2nd installment'];
+export const PAYMENT_PLAN_OPTIONS: PaymentPlan[] = [
+  'Not Paid Yet',
+  'Fully Paid',
+  '1st installment',
+  '2nd installment',
+];
+
+export function normalizePaymentPlan(plan?: string | null): PaymentPlan {
+  if (plan === 'Not Paid Yet' || plan === 'Fully Paid' || plan === '1st installment' || plan === '2nd installment') {
+    return plan;
+  }
+
+  return PAYMENT_PLAN_PLACEHOLDER;
+}
+
+export function isLockedPaymentPlan(plan: PaymentPlan): boolean {
+  return LOCKED_PAYMENT_PLANS.includes(plan);
+}
+
+export function getPaymentPlanAmounts(plan: PaymentPlan): { amountPaid: number; balanceRemaining: number } | null {
+  switch (plan) {
+    case 'Fully Paid':
+      return { amountPaid: 50000, balanceRemaining: 0 };
+    case '1st installment':
+      return { amountPaid: 30000, balanceRemaining: 20000 };
+    case '2nd installment':
+      return { amountPaid: 20000, balanceRemaining: 0 };
+    case 'Not Paid Yet':
+    case 'Select a plan':
+    default:
+      return null;
+  }
+}
+
 export interface StudentData {
   id?: string;
   name: string;
@@ -28,6 +65,9 @@ export class PaymentPlanService {
   // Save or update student with payment plan
   static async upsertStudentPaymentPlan(studentData: StudentData): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
+      const normalizedPlan = normalizePaymentPlan(studentData.payment_plan);
+      const paymentAmounts = getPaymentPlanAmounts(normalizedPlan);
+
       const { data, error } = await supabase.rpc('upsert_student_payment_plan', {
         p_student_id: studentData.id || null,
         p_name: studentData.name,
@@ -36,9 +76,9 @@ export class PaymentPlanService {
         p_course: studentData.course,
         p_reg_date: studentData.reg_date,
         p_reg_time: studentData.reg_time || null,
-        p_payment_plan: studentData.payment_plan,
-        p_amount_paid: studentData.amount_paid || 0,
-        p_balance_remaining: studentData.balance_remaining || 0,
+        p_payment_plan: normalizedPlan,
+        p_amount_paid: paymentAmounts?.amountPaid ?? 0,
+        p_balance_remaining: paymentAmounts?.balanceRemaining ?? 0,
         p_status: studentData.status || 'None',
         p_timestamp: studentData.timestamp,
         p_gender: studentData.gender,
@@ -66,12 +106,15 @@ export class PaymentPlanService {
   // Update only payment plan for existing student
   static async updateStudentPaymentPlan(studentId: string, paymentPlan: PaymentPlan): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log('Updating payment plan:', { studentId, paymentPlan });
+      const normalizedPlan = normalizePaymentPlan(paymentPlan);
+      const paymentAmounts = getPaymentPlanAmounts(normalizedPlan);
+
+      console.log('Updating payment plan:', { studentId, paymentPlan: normalizedPlan });
       
       // First try RPC function
       const { data, error } = await supabase.rpc('update_student_payment_plan', {
         p_student_id: studentId,
-        p_payment_plan: paymentPlan
+        p_payment_plan: normalizedPlan
       } as any);
 
       console.log('Supabase RPC response:', { data, error });
@@ -83,7 +126,9 @@ export class PaymentPlanService {
         const { error: updateError } = await supabase
           .from('students')
           .update({ 
-            payment_plan: paymentPlan,
+            payment_plan: normalizedPlan,
+            amount_paid: paymentAmounts?.amountPaid ?? 0,
+            balance_remaining: paymentAmounts?.balanceRemaining ?? 0,
             updated_at: new Date().toISOString()
           } as any)
           .eq('id', studentId);

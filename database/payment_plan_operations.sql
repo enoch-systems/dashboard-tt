@@ -5,7 +5,7 @@
 CREATE OR REPLACE FUNCTION validate_payment_plan(plan TEXT)
 RETURNS BOOLEAN AS $$
 BEGIN
-  RETURN plan IN ('Select a plan', 'Fully Paid', '1st installment', '2nd installment');
+  RETURN plan IN ('Select a plan', 'Not Paid Yet', 'Fully Paid', '1st installment', '2nd installment');
 END;
 $$ LANGUAGE plpgsql;
 
@@ -99,16 +99,32 @@ CREATE OR REPLACE FUNCTION update_student_payment_plan(
   p_payment_plan TEXT
 )
 RETURNS BOOLEAN AS $$
+DECLARE
+  v_amount_paid NUMERIC := 0;
+  v_balance_remaining NUMERIC := 0;
 BEGIN
   -- Validate payment plan
   IF NOT validate_payment_plan(p_payment_plan) THEN
     RAISE EXCEPTION 'Invalid payment plan: %', p_payment_plan;
   END IF;
 
+  IF p_payment_plan = 'Fully Paid' THEN
+    v_amount_paid := 50000;
+    v_balance_remaining := 0;
+  ELSIF p_payment_plan = '1st installment' THEN
+    v_amount_paid := 30000;
+    v_balance_remaining := 20000;
+  ELSIF p_payment_plan = '2nd installment' THEN
+    v_amount_paid := 20000;
+    v_balance_remaining := 0;
+  END IF;
+
   -- Update payment plan
   UPDATE public.students 
   SET 
     payment_plan = p_payment_plan,
+    amount_paid = v_amount_paid,
+    balance_remaining = v_balance_remaining,
     updated_at = NOW()
   WHERE id = p_student_id;
 
@@ -126,10 +142,10 @@ RETURNS TABLE(
 DECLARE
   total_students BIGINT;
 BEGIN
-  -- Get total number of students (excluding 'Select a plan')
+  -- Get total number of students with an actual saved payment plan
   SELECT COUNT(*) INTO total_students
   FROM public.students 
-  WHERE payment_plan != 'Select a plan';
+  WHERE payment_plan NOT IN ('Select a plan', 'Not Paid Yet');
 
   -- Return statistics
   RETURN QUERY
@@ -142,7 +158,7 @@ BEGIN
       ELSE 0 
     END as percentage
   FROM public.students s
-  WHERE s.payment_plan != 'Select a plan'
+  WHERE s.payment_plan NOT IN ('Select a plan', 'Not Paid Yet')
   GROUP BY s.payment_plan
   ORDER BY count DESC;
 END;

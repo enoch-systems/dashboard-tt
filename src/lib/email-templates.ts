@@ -272,8 +272,10 @@ export const emailTemplates = {
     </html>
   `,
   group_redirection: (data: EmailData): string => {
-    // Clean course name by removing " - Select a plan" suffix
-    const cleanCourseName = (data.courseName || '').replace(' - Select a plan', '');
+    // Clean course name by removing placeholder payment-plan suffixes
+    const cleanCourseName = (data.courseName || '')
+      .replace(' - Select a plan', '')
+      .replace(' - Not Paid Yet', '');
     
     // Get the group info based on course name
     const groupInfo = courseGroupMapping[cleanCourseName] || {
