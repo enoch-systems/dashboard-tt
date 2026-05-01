@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { emailTemplates, EmailData } from '@/lib/email-templates';
+import { emailTemplates, EmailData, getGroupInfoForCourse } from '@/lib/email-templates';
 
 function generateEmailHtml(emailType: string, data: EmailData): string {
   switch (emailType) {
     case 'welcome':
       return emailTemplates.welcome(data);
+    case 'payment_confirmation':
+      return emailTemplates.payment_confirmation(data);
+    case 'group_redirection':
+      return emailTemplates.group_redirection(data);
     default:
       return `<p>Email type not supported for preview</p>`;
   }
@@ -15,14 +19,22 @@ export async function GET(request: NextRequest) {
   const emailType = searchParams.get('type') || 'welcome';
   const studentName = searchParams.get('studentName') || 'John Doe';
   const courseName = searchParams.get('courseName') || 'Tech Trailblazer Scholarship Bootcamp Cohort 1';
-  const startDate = searchParams.get('startDate') || '27th May, 2026';
+  const startDate = searchParams.get('startDate') || '20th May, 2026';
   const scholarshipDate = searchParams.get('scholarshipDate') || 'May 2026';
+  const paymentType = (searchParams.get('paymentType') || 'Fully Paid') as EmailData["paymentType"];
+  const amountPaid = Number(searchParams.get('amountPaid') || '50000');
+  const { groupInfo } = getGroupInfoForCourse(courseName);
 
   const emailHtml = generateEmailHtml(emailType, {
     studentName,
     courseName,
     startDate,
-    scholarshipDate
+    scholarshipDate,
+    paymentType,
+    amountPaid,
+    paymentDate: new Date().toLocaleDateString('en-GB'),
+    groupName: groupInfo.name,
+    groupLink: groupInfo.link,
   });
 
   return new Response(`
@@ -92,6 +104,8 @@ export async function GET(request: NextRequest) {
             <label>Email Type:</label>
             <select name="type" onchange="this.form.submit()">
               <option value="welcome" ${emailType === 'welcome' ? 'selected' : ''}>Welcome Email</option>
+              <option value="payment_confirmation" ${emailType === 'payment_confirmation' ? 'selected' : ''}>Payment Confirmation</option>
+              <option value="group_redirection" ${emailType === 'group_redirection' ? 'selected' : ''}>Group Redirection</option>
             </select>
             
             <label>Student Name:</label>
@@ -99,6 +113,16 @@ export async function GET(request: NextRequest) {
             
             <label>Start Date:</label>
             <input type="text" name="startDate" value="${startDate}" placeholder="Start Date">
+
+            <label>Payment Type:</label>
+            <select name="paymentType">
+              <option value="Fully Paid" ${paymentType === 'Fully Paid' ? 'selected' : ''}>Fully Paid</option>
+              <option value="1st Installment" ${paymentType === '1st Installment' ? 'selected' : ''}>1st Installment</option>
+              <option value="2nd Installment" ${paymentType === '2nd Installment' ? 'selected' : ''}>2nd Installment</option>
+            </select>
+
+            <label>Amount:</label>
+            <input type="text" name="amountPaid" value="${amountPaid}" placeholder="Amount">
             
             <label>Scholarship Date:</label>
             <input type="text" name="scholarshipDate" value="${scholarshipDate}" placeholder="Scholarship Date">

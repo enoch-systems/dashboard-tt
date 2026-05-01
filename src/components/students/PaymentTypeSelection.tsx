@@ -19,12 +19,12 @@ export function PaymentTypeSelection({ isOpen, onClose, onPaymentTypeSelect, stu
     },
     {
       id: "1st Installment",
-      name: "1st Installment",
+      name: "First Installment",
       description: "First installment - N30,000"
     },
     {
       id: "2nd Installment",
-      name: "2nd Installment",
+      name: "Second Installment",
       description: "Second installment - N20,000"
     }
   ];

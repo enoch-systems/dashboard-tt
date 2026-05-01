@@ -1,112 +1,115 @@
-// Using direct Cloudinary URL for banner image
-const BANNER_IMAGE_URL = 'https://res.cloudinary.com/deafv5ovi/image/upload/f_auto,q_auto/banner_pxcyr3';
+const BANNER_TOP_IMAGE_URL =
+  "https://res.cloudinary.com/deafv5ovi/image/upload/f_auto,q_auto,dpr_auto,c_limit,w_1280/banner_pxcyr3";
+const BANNER_BOTTOM_IMAGE_URL =
+  "https://res.cloudinary.com/deafv5ovi/image/upload/f_auto,q_auto,dpr_auto,c_limit,w_1280/v1777535098/Facebook_rp0eyf.jpg";
 
 export interface EmailData {
   studentName: string;
   courseName?: string;
   startDate?: string;
   scholarshipDate?: string;
-  [key: string]: any;
+  paymentType?: "Fully Paid" | "1st Installment" | "2nd Installment";
+  amountPaid?: number;
+  paymentDate?: string;
+  groupName?: string;
+  groupLink?: string;
+  [key: string]: unknown;
 }
 
-export const emailStyles = {
-  container: "font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #2d3748; max-width: 600px; margin: 0 auto; background: #ffffff; padding: 0;",
-  header: "color: #000000; font-size: 24px; font-weight: 600; margin-bottom: 20px; padding: 0 20px;",
-  subheader: "color: #2563eb; font-size: 20px; font-weight: 500; margin-bottom: 25px; padding: 0 20px;",
-  sectionHeader: "color: #1a365d; font-size: 18px; font-weight: 600; border-bottom: 2px solid #1a365d; padding-bottom: 8px; margin-bottom: 20px; padding: 0 20px;",
-  cardBackground: "#f8fafc",
-  borderColor: "#e2e8f0",
-  primaryColor: "#1a365d",
-  textColor: "#2d3748",
-  mutedColor: "#4a5568",
-  lightColor: "#718096",
-  buttonBackground: "#1a365d",
-  buttonTextColor: "white"
-};
+const KICKOFF_DATE = "20th May, 2026";
+const PROGRAM_DURATION = "16 weeks";
 
-export const welcomeEmailTemplate = (data: EmailData): string => `
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to Tech Trailblazer Academy</title>
-  </head>
-  <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
-    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-      
-      <!-- Header Banner -->
-      <div style="text-align: center; padding: 0; background-color: #ffffff;">
-        <img src="${BANNER_IMAGE_URL}" alt="Tech Trailblazer Academy" style="width: 100%; height: auto; display: block; border-radius: 0;">
-      </div>
-      
-      <!-- Main Content -->
-      <div style="padding: 30px 20px;">
-        
-        <!-- Greeting -->
-        <h1 style="color: #000000; font-size: 24px; font-weight: 600; margin-bottom: 20px; line-height: 1.3;">Dear ${data.studentName},</h1>
-        
-        <!-- Welcome Message -->
-        <h2 style="color: #1a365d; font-size: 20px; font-weight: 600; margin-bottom: 25px; line-height: 1.3; text-align: center;">WELCOME TO TECH TRAILBLAZER ACADEMY</h2>
-        
-        <p style="margin-bottom: 20px; font-size: 16px; line-height: 1.6;">We are delighted to welcome you to Tech Trailblazer Academy. Your decision to invest in your professional development through our program demonstrates your commitment to excellence and growth.</p>
-        
-        <p style="margin-bottom: 25px; font-size: 16px; line-height: 1.6;">Our academy is dedicated to providing world-class education that empowers individuals to succeed in the technology industry. We look forward to supporting you throughout your learning journey.</p>
-        
-        <!-- Program Information -->
-        <div style="margin-bottom: 30px;">
-          <h3 style="color: #1a365d; font-size: 18px; font-weight: 600; border-bottom: 2px solid #1a365d; padding-bottom: 8px; margin-bottom: 20px;">Your Program Details</h3>
-          
-          <div style="background: #f8fafc; padding: 25px; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0;">
-            <p style="color: #1a365d; font-weight: 600; margin-bottom: 15px; font-size: 16px;">Program: ${data.courseName || 'Your Selected Course'}</p>
-            <p style="margin-bottom: 15px; color: #4a5568; font-size: 15px; line-height: 1.6;">Our comprehensive curriculum is designed to provide you with practical skills and industry knowledge that employers value.</p>
-            <p style="margin-bottom: 0; color: #4a5568; font-size: 15px; line-height: 1.6;">You will receive hands-on training, mentorship from industry professionals, and career support throughout your journey with us.</p>
-          </div>
-        </div>
-        
-        <!-- Important Information -->
-        <div style="margin-bottom: 30px;">
-          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 25px; border-radius: 8px;">
-            <p style="color: #1a365d; font-weight: 600; margin-bottom: 15px; font-size: 16px;">Important Information</p>
-            <ul style="margin: 15px 0; padding-left: 25px; color: #4a5568; font-size: 15px; line-height: 1.6;">
-              <li style="margin-bottom: 8px;"><strong>Program Start:</strong> ${data.startDate || 'May 2026'}</li>
-              <li style="margin-bottom: 8px;"><strong>Duration:</strong> 16 weeks of intensive training</li>
-              <li style="margin-bottom: 0;"><strong>Certificate:</strong> Industry-recognized certification upon completion</li>
-            </ul>
-          </div>
-        </div>
-        
-        <!-- Next Steps -->
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 25px; border-radius: 8px; margin: 20px 0;">
-          <p style="color: #1a365d; font-weight: 600; margin-bottom: 15px; font-size: 16px;">What's Next</p>
-          <p style="margin-bottom: 15px; color: #4a5568; font-size: 15px; line-height: 1.6;">You will receive further instructions regarding your course schedule, access to learning materials, and onboarding information before the program begins.</p>
-          <p style="margin-bottom: 0; color: #4a5568; font-size: 15px; line-height: 1.6;">Please ensure you have completed any pending requirements and are ready to commence your learning journey.</p>
-        </div>
-        
-      </div>
-      
-      <!-- Signature Section -->
-      <div style="padding: 30px 20px; border-top: 1px solid #e2e8f0; background: #fafafa;">
-        <p style="color: #2d3748; margin-bottom: 8px; font-size: 16px;"><strong>Best regards,</strong></p>
-        <p style="color: #2d3748; margin-bottom: 5px; font-weight: 600; font-size: 16px;">Amah Precious,</p>
-        <p style="color: #718096; font-size: 14px; margin-bottom: 5px;">Host & Student Success Coordinator</p>
-        <p style="color: #718096; font-size: 14px;">Tech Trailblazer Academy</p>
-      </div>
-      
-      <!-- Bottom Banner -->
-      <div style="text-align: center; padding: 20px 0; background: #ffffff;">
-        <img src="https://res.cloudinary.com/deafv5ovi/image/upload/v1777535098/Facebook_rp0eyf.jpg" alt="Tech Trailblazer Academy" style="width: 100%; max-width: 400px; max-height: 150px; height: auto; display: block; margin: 0 auto; border-radius: 8px; object-fit: cover;">
-      </div>
-      
-      <!-- Footer -->
-      <div style="text-align: center; padding: 25px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0;">
-        <p style="color: #718096; font-size: 12px; margin: 0;">Copyright &copy; 2026 Tech Trailblazer Academy. All rights reserved.</p>
-      </div>
-      
-    </div>
-  </body>
-  </html>
+const baseShell = ({
+  title,
+  preheader,
+  body,
+}: {
+  title: string;
+  preheader: string;
+  body: string;
+}) => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+</head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#111827;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${preheader}</div>
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#f3f4f6;padding:24px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:640px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.08);">
+          <tr>
+            <td>
+              <img
+                src="${BANNER_TOP_IMAGE_URL}"
+                alt="Tech Trailblazer Academy"
+                width="640"
+                style="display:block;width:100%;max-width:640px;height:auto;border:0;outline:none;text-decoration:none;"
+              >
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px 24px;">${body}</td>
+          </tr>
+          <tr>
+            <td style="padding:0 24px 24px 24px;">
+              <img
+                src="${BANNER_BOTTOM_IMAGE_URL}"
+                alt="Tech Trailblazer Academy"
+                width="592"
+                style="display:block;width:100%;max-width:592px;height:auto;border-radius:10px;border:0;outline:none;text-decoration:none;"
+              >
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 24px 26px 24px;background:#f8fafc;border-top:1px solid #e5e7eb;">
+              <p style="margin:0 0 6px 0;font-size:14px;color:#111827;"><strong>Warm regards,</strong></p>
+              <p style="margin:0 0 4px 0;font-size:14px;color:#111827;">Programs Team, Tech Trailblazer Academy</p>
+              <p style="margin:0;font-size:12px;color:#6b7280;">Copyright &copy; 2026 Tech Trailblazer Academy. All rights reserved.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
 `;
+
+const courseCareerHint = (courseName?: string) => {
+  const course = (courseName || "your selected track").trim();
+  const hints: Record<string, string> = {
+    "Cybersecurity":
+      "You will build practical security skills for threat detection, incident response, and defensive operations.",
+    "Data Science":
+      "You will learn to turn datasets into insights and predictive models that solve real business problems.",
+    "AI Automation":
+      "You will build AI-powered workflows that automate repetitive tasks and improve team productivity.",
+    "Computer Networking":
+      "You will gain hands-on networking skills for modern infrastructure, troubleshooting, and reliable systems.",
+    "Ethical Hacking":
+      "You will develop penetration testing and vulnerability assessment skills with responsible security practices.",
+    "UI/UX Design":
+      "You will design user-centered digital products that combine usability, clarity, and strong visual communication.",
+    "Full Stack Development":
+      "You will build end-to-end web applications from frontend interfaces to backend services and deployment.",
+    "Frontend Development":
+      "You will create responsive, accessible interfaces and production-grade user experiences.",
+    "Backend Development":
+      "You will design APIs, data flows, and scalable server-side architecture for robust applications.",
+    "Web Development":
+      "You will build complete web solutions with modern tools, clean code practices, and real project delivery.",
+    "Digital Marketing":
+      "You will learn performance-driven marketing strategies for growth, conversion, and brand visibility.",
+    "Cloud Computing":
+      "You will deploy and manage scalable cloud infrastructure and modern application environments.",
+  };
+
+  return hints[course] || `You are on track to build real-world capability in ${course}.`;
+};
 
 // Course to WhatsApp Group Mapping
 const courseGroupMapping: { [key: string]: { name: string; link: string } } = {
@@ -181,201 +184,149 @@ const courseGroupMapping: { [key: string]: { name: string; link: string } } = {
   }
 };
 
+export function normalizeCourseName(courseName?: string) {
+  return (courseName || "")
+    .replace(" - Select a plan", "")
+    .replace(" - Not Paid Yet", "")
+    .trim();
+}
+
+export function getGroupInfoForCourse(courseName?: string) {
+  const cleanCourseName = normalizeCourseName(courseName);
+  return {
+    cleanCourseName,
+    groupInfo: courseGroupMapping[cleanCourseName] || {
+      name: "General Group",
+      link: "https://chat.whatsapp.com/YOUR_GENERAL_LINK",
+    },
+  };
+}
+
+export function getEmailSubject(emailType: string, data: EmailData) {
+  switch (emailType) {
+    case "welcome":
+      return `Welcome to Tech Trailblazer Academy, ${data.studentName}`;
+    case "payment_confirmation":
+      if (data.paymentType === "Fully Paid") {
+        return `Payment Confirmed - Full Tuition Received (${normalizeCourseName(data.courseName)})`;
+      }
+      return `Payment Confirmed - ${data.paymentType} (${normalizeCourseName(data.courseName)})`;
+    case "group_redirection": {
+      const { cleanCourseName } = getGroupInfoForCourse(data.courseName);
+      return `Join Your ${cleanCourseName || "Course"} WhatsApp Group`;
+    }
+    default:
+      return "Tech Trailblazer Academy Update";
+  }
+}
+
 export const emailTemplates = {
-  welcome: welcomeEmailTemplate,
-  payment_confirmation: (data: EmailData): string => `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Payment Confirmation - Tech Trailblazer Academy</title>
-    </head>
-    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
-      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        
-        <!-- Header Banner -->
-        <div style="text-align: center; padding: 0; background-color: #ffffff;">
-          <img src="${BANNER_IMAGE_URL}" alt="Tech Trailblazer Academy" style="width: 100%; height: auto; display: block; border-radius: 0;">
+  welcome: (data: EmailData): string =>
+    baseShell({
+      title: "Welcome to Tech Trailblazer Academy",
+      preheader: `${data.studentName}, congratulations! You have been selected for the scholarship cohort starting ${KICKOFF_DATE}.`,
+      body: `
+        <p style="margin:0 0 16px 0;font-size:18px;font-weight:700;color:#111827;">Hey ${data.studentName},</p>
+        <p style="margin:0 0 16px 0;font-size:16px;line-height:1.7;color:#374151;"><strong>Congratulations - you have been selected for the Tech Trailblazer Academy Scholarship Bootcamp.</strong></p>
+        <p style="margin:0 0 16px 0;font-size:16px;line-height:1.7;color:#374151;">
+          This is a major milestone, and we are genuinely excited to welcome you into our learning community.
+          Your decision to build a career in <strong>${normalizeCourseName(data.courseName) || "your selected tech track"}</strong> is bold and future-focused.
+          ${courseCareerHint(data.courseName)}
+        </p>
+        <div style="margin:20px 0;padding:18px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;">
+          <p style="margin:0 0 8px 0;font-size:15px;color:#111827;"><strong>Scholarship Status:</strong> Selected</p>
+          <p style="margin:0 0 8px 0;font-size:15px;color:#111827;"><strong>Program Track:</strong> ${normalizeCourseName(data.courseName) || "Selected Track"}</p>
+          <p style="margin:0 0 8px 0;font-size:15px;color:#111827;"><strong>Class Kickoff:</strong> ${data.startDate || KICKOFF_DATE}</p>
+          <p style="margin:0;font-size:15px;color:#111827;"><strong>Format:</strong> Virtual live classes (${PROGRAM_DURATION})</p>
         </div>
-        
-        <!-- Main Content -->
-        <div style="padding: 30px 20px;">
-          
-          <!-- Greeting -->
-          <h1 style="color: #000000; font-size: 24px; font-weight: 600; margin-bottom: 20px; line-height: 1.3;">Dear ${data.studentName},</h1>
-          
-          <!-- Payment Confirmation Message -->
-          <h2 style="color: #059669; font-size: 20px; font-weight: 600; margin-bottom: 25px; line-height: 1.3; text-align: center;">PAYMENT CONFIRMATION</h2>
-          
-          <p style="margin-bottom: 20px; font-size: 16px; line-height: 1.6;">We are pleased to confirm that we have successfully received your payment for the <strong>${data.courseName || 'your selected program'}</strong>. Thank you for your investment in your future.</p>
-          
-          <!-- Payment Type Selection -->
-          <div style="background: #f0fdf4; border: 1px solid #86efac; padding: 25px; border-radius: 8px; margin: 20px 0;">
-            <p style="color: #059669; font-weight: 600; margin-bottom: 15px; font-size: 16px;">Payment Type Received:</p>
-            <p style="margin-bottom: 0; color: #065f46; font-size: 18px; line-height: 1.6; font-weight: 700;">${data.paymentType || 'Fully Paid'}</p>
-          </div>
-          
-          <!-- Payment Details -->
-          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 25px; border-radius: 8px; margin: 20px 0;">
-            <p style="color: #1a365d; font-weight: 600; margin-bottom: 15px; font-size: 16px;">Payment Details:</p>
-            <ul style="margin: 15px 0; padding-left: 25px; color: #4a5568; font-size: 15px; line-height: 1.6;">
-              <li style="margin-bottom: 8px;"><strong>Program:</strong> ${data.courseName || 'Your Selected Program'}</li>
-              <li style="margin-bottom: 8px;"><strong>Amount Paid:</strong> N${data.amountPaid?.toLocaleString() || 'TBD'}</li>
-              <li style="margin-bottom: 8px;"><strong>Payment Date:</strong> ${data.paymentDate || new Date().toLocaleDateString('en-GB')}</li>
-              <li style="margin-bottom: 0;"><strong>Payment Status:</strong> <span style="color: #059669; font-weight: 600;">CONFIRMED</span></li>
-            </ul>
-          </div>
-          
-          <!-- Next Steps -->
-          <div style="margin-bottom: 30px;">
-            <h3 style="color: #1a365d; font-size: 18px; font-weight: 600; border-bottom: 2px solid #1a365d; padding-bottom: 8px; margin-bottom: 20px;">What Happens Next</h3>
-            <p style="margin-bottom: 15px; font-size: 16px; line-height: 1.6;">Your enrollment is now confirmed. Here's what you can expect:</p>
-            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 15px 0; border: 1px solid #e2e8f0;">
-              <ul style="margin: 10px 0; padding-left: 20px; color: #4a5568; font-size: 14px; line-height: 1.5;">
-                <li style="margin-bottom: 5px;">Access to course materials and resources</li>
-                <li style="margin-bottom: 5px;">Invitation to join our learning community</li>
-                <li style="margin-bottom: 5px;">Updates on class schedules and sessions</li>
-                <li style="margin-bottom: 0;">Support from our dedicated team</li>
-              </ul>
-            </div>
-          </div>
-          
-          <!-- Contact Information -->
-          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 25px; border-radius: 8px; margin: 20px 0;">
-            <p style="color: #1a365d; font-weight: 600; margin-bottom: 15px; font-size: 16px;">Need Assistance?</p>
-            <p style="margin-bottom: 0; color: #4a5568; font-size: 15px; line-height: 1.6;">If you have any questions about your payment or enrollment, please don't hesitate to reach out to our support team. We're here to help you succeed.</p>
-          </div>
-          
+
+        <h3 style="margin:24px 0 12px 0;font-size:17px;line-height:1.4;color:#111827;">What your virtual learning experience will look like</h3>
+        <p style="margin:0 0 12px 0;font-size:16px;line-height:1.7;color:#374151;">
+          Your cohort runs fully online, so you can join from anywhere with stable internet access.
+          Classes include instructor-led live sessions, guided practical tasks, feedback loops, and accountability checkpoints to keep you progressing every week.
+        </p>
+        <p style="margin:0 0 12px 0;font-size:16px;line-height:1.7;color:#374151;">
+          You will not be learning in isolation: you will be part of a structured community where you can ask questions, collaborate with peers, and get clarity from mentors in real time.
+        </p>
+
+        <h3 style="margin:24px 0 12px 0;font-size:17px;line-height:1.4;color:#111827;">What you stand to gain from this scholarship bootcamp</h3>
+        <div style="margin:0 0 16px 0;padding:16px 18px;border:1px solid #e5e7eb;border-radius:10px;background:#ffffff;">
+          <ul style="margin:0;padding-left:20px;color:#374151;font-size:15px;line-height:1.7;">
+            <li style="margin-bottom:6px;">Hands-on project experience in your selected track</li>
+            <li style="margin-bottom:6px;">Industry-relevant skills employers are actively hiring for</li>
+            <li style="margin-bottom:6px;">Portfolio-ready outputs you can showcase publicly</li>
+            <li style="margin-bottom:6px;">Mentorship, peer community, and practical guidance</li>
+            <li style="margin-bottom:6px;">Career growth support with real implementation focus</li>
+            <li style="margin-bottom:0;">A clear path from beginner/intermediate level to job-ready execution</li>
+          </ul>
         </div>
-        
-        <!-- Signature Section -->
-        <div style="padding: 30px 20px; border-top: 1px solid #e2e8f0; background: #fafafa;">
-          <p style="color: #2d3748; margin-bottom: 8px; font-size: 16px;"><strong>Best regards,</strong></p>
-          <p style="color: #2d3748; margin-bottom: 5px; font-weight: 600; font-size: 16px;">Amah Precious,</p>
-          <p style="color: #718096; font-size: 14px; margin-bottom: 5px;">Host & Student Success Coordinator</p>
-          <p style="color: #718096; font-size: 14px;">Tech Trailblazer Academy</p>
-        </div>
-        
-        <!-- Bottom Banner -->
-        <div style="text-align: center; padding: 20px 0; background: #ffffff;">
-          <img src="https://res.cloudinary.com/deafv5ovi/image/upload/v1777535098/Facebook_rp0eyf.jpg" alt="Tech Trailblazer Academy" style="width: 100%; max-width: 400px; max-height: 150px; height: auto; display: block; margin: 0 auto; border-radius: 8px; object-fit: cover;">
-        </div>
-        
-        <!-- Footer -->
-        <div style="text-align: center; padding: 25px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0;">
-          <p style="color: #718096; font-size: 12px; margin: 0;">Copyright &copy; 2026 Tech Trailblazer Academy. All rights reserved.</p>
-        </div>
-        
-      </div>
-    </body>
-    </html>
-  `,
-  group_redirection: (data: EmailData): string => {
-    // Clean course name by removing placeholder payment-plan suffixes
-    const cleanCourseName = (data.courseName || '')
-      .replace(' - Select a plan', '')
-      .replace(' - Not Paid Yet', '');
-    
-    // Get the group info based on course name
-    const groupInfo = courseGroupMapping[cleanCourseName] || {
-      name: 'General Group',
-      link: 'https://chat.whatsapp.com/YOUR_GENERAL_LINK'
+
+        <p style="margin:0 0 12px 0;font-size:16px;line-height:1.7;color:#374151;">
+          At Tech Trailblazer Academy, we believe world-class tech education should be practical, accessible, and transformational.
+          This scholarship gives you the structure and support to move from intention to measurable progress.
+        </p>
+
+        <p style="margin:0 0 16px 0;font-size:16px;line-height:1.7;color:#374151;">
+          In the coming days, we will send your onboarding instructions, class schedule, and preparation checklist.
+          Please watch your email closely so you do not miss key announcements before kickoff.
+        </p>
+        <p style="margin:0;font-size:16px;line-height:1.7;color:#374151;">
+          Once again, congratulations on your scholarship selection. We are proud to have you with us.
+          Let us build your next chapter in tech - together.
+        </p>
+      `,
+    }),
+  payment_confirmation: (data: EmailData): string => {
+    const paymentType = data.paymentType || "Fully Paid";
+    const messageByType: Record<string, string> = {
+      "Fully Paid":
+        "Fantastic commitment. Your full tuition has been received and your enrollment is now fully secured.",
+      "1st Installment":
+        "Great start. We have received your first installment and your onboarding remains active.",
+      "2nd Installment":
+        "Excellent follow-through. Your second installment has been received and your payment update is now complete.",
     };
 
-    return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Join Your WhatsApp Group - Tech Trailblazer Academy</title>
-    </head>
-    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
-      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        
-        <!-- Header Banner -->
-        <div style="text-align: center; padding: 0; background-color: #ffffff;">
-          <img src="${BANNER_IMAGE_URL}" alt="Tech Trailblazer Academy" style="width: 100%; height: auto; display: block; border-radius: 0;">
+    return baseShell({
+      title: "Payment Confirmation",
+      preheader: `${paymentType} payment confirmed for ${data.studentName}.`,
+      body: `
+        <p style="margin:0 0 16px 0;font-size:18px;font-weight:700;color:#111827;">Hi ${data.studentName},</p>
+        <p style="margin:0 0 16px 0;font-size:16px;line-height:1.7;color:#374151;">This is to confirm that we have received your payment for <strong>${normalizeCourseName(data.courseName) || "your selected course"}</strong>.</p>
+        <p style="margin:0 0 16px 0;font-size:16px;line-height:1.7;color:#374151;">${messageByType[paymentType] || messageByType["Fully Paid"]}</p>
+        <div style="margin:20px 0;padding:18px;border:1px solid #d1fae5;border-radius:10px;background:#ecfdf5;">
+          <p style="margin:0 0 8px 0;font-size:15px;color:#065f46;"><strong>Payment Type:</strong> ${paymentType}</p>
+          <p style="margin:0 0 8px 0;font-size:15px;color:#065f46;"><strong>Amount Received:</strong> N${Number(data.amountPaid || 0).toLocaleString()}</p>
+          <p style="margin:0;font-size:15px;color:#065f46;"><strong>Date:</strong> ${data.paymentDate || new Date().toLocaleDateString("en-GB")}</p>
         </div>
-        
-        <!-- Main Content -->
-        <div style="padding: 30px 20px;">
-          
-          <!-- Greeting -->
-          <h1 style="color: #000000; font-size: 24px; font-weight: 600; margin-bottom: 20px; line-height: 1.3;">Dear ${data.studentName},</h1>
-          
-          <!-- Welcome Message -->
-          <h2 style="color: #1a365d; font-size: 20px; font-weight: 600; margin-bottom: 25px; line-height: 1.3; text-align: center;">JOIN YOUR WHATSAPP GROUP</h2>
-          
-          <p style="margin-bottom: 20px; font-size: 16px; line-height: 1.6;">We are excited to have you join our learning community! Based on your enrollment in the <strong>${cleanCourseName || 'your program'}</strong>, we have created a dedicated WhatsApp group for you and your fellow students.</p>
-          
-          <p style="margin-bottom: 25px; font-size: 16px; line-height: 1.6;">This group is where you will connect with your classmates, receive important updates, participate in discussions, and get support throughout your learning journey.</p>
-          
-          <!-- Group Information -->
-          <div style="background: #f0fdf4; border: 1px solid #86efac; padding: 25px; border-radius: 8px; margin: 20px 0;">
-            <p style="color: #059669; font-weight: 600; margin-bottom: 15px; font-size: 16px;">Your WhatsApp Group:</p>
-            <p style="margin-bottom: 0; color: #065f46; font-size: 18px; line-height: 1.6; font-weight: 700;">${groupInfo.name}</p>
-          </div>
-          
-          <!-- WhatsApp Join Button -->
-          <div style="text-align: center; margin: 40px 0; padding: 30px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-            <h4 style="color: #1a365d; font-size: 18px; font-weight: 600; margin-bottom: 15px;">Click to Join Your Group</h4>
-            <p style="margin-bottom: 25px; color: #4a5568; font-size: 15px; line-height: 1.5;">Join the ${groupInfo.name} to connect with your classmates and instructors.</p>
-            
-            <div style="margin: 20px 0;">
-              <a href="${groupInfo.link}" style="background-color: #25D366; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 16px; transition: background-color 0.3s;">
-                <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.149-.67.149-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414-.074-.123-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-                </svg>
-                <span>Join ${cleanCourseName || 'WhatsApp'} Group</span>
-              </a>
-            </div>
-          </div>
-          
-          <!-- What to Expect -->
-          <div style="margin-bottom: 30px;">
-            <h3 style="color: #1a365d; font-size: 18px; font-weight: 600; border-bottom: 2px solid #1a365d; padding-bottom: 8px; margin-bottom: 20px;">What to Expect in Your Group</h3>
-            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 15px 0; border: 1px solid #e2e8f0;">
-              <ul style="margin: 10px 0; padding-left: 20px; color: #4a5568; font-size: 14px; line-height: 1.5;">
-                <li style="margin-bottom: 5px;">Connect with fellow students in your course</li>
-                <li style="margin-bottom: 5px;">Receive important announcements and updates</li>
-                <li style="margin-bottom: 5px;">Participate in group discussions and Q&A sessions</li>
-                <li style="margin-bottom: 5px;">Share resources and learning materials</li>
-                <li style="margin-bottom: 0;">Get support from instructors and peers</li>
-              </ul>
-            </div>
-          </div>
-          
-          <!-- Contact Information -->
-          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 25px; border-radius: 8px; margin: 20px 0;">
-            <p style="color: #1a365d; font-weight: 600; margin-bottom: 15px; font-size: 16px;">Need Help?</p>
-            <p style="margin-bottom: 0; color: #4a5568; font-size: 15px; line-height: 1.6;">If you have any trouble joining the group or have questions, please don't hesitate to reach out to our support team. We're here to help you get started.</p>
-          </div>
-          
+        <p style="margin:0;font-size:16px;line-height:1.7;color:#374151;">Thank you for your trust. We look forward to seeing you in class on ${KICKOFF_DATE}.</p>
+      `,
+    });
+  },
+  group_redirection: (data: EmailData): string => {
+    const { cleanCourseName, groupInfo } = getGroupInfoForCourse(data.courseName);
+    return baseShell({
+      title: "Join Your Course Community",
+      preheader: `Join your ${cleanCourseName || "course"} WhatsApp group before classes start.`,
+      body: `
+        <p style="margin:0 0 16px 0;font-size:18px;font-weight:700;color:#111827;">Hi ${data.studentName},</p>
+        <p style="margin:0 0 16px 0;font-size:16px;line-height:1.7;color:#374151;">
+          Your learning community is ready. Based on your selected course, you should join <strong>${groupInfo.name}</strong> to get important updates and pre-class support.
+        </p>
+        <div style="margin:20px 0;padding:18px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;">
+          <p style="margin:0 0 8px 0;font-size:15px;color:#111827;"><strong>Course:</strong> ${cleanCourseName || "Selected Track"}</p>
+          <p style="margin:0 0 8px 0;font-size:15px;color:#111827;"><strong>Group:</strong> ${groupInfo.name}</p>
+          <p style="margin:0;font-size:15px;color:#111827;"><strong>Kickoff Date:</strong> ${KICKOFF_DATE}</p>
         </div>
-        
-        <!-- Signature Section -->
-        <div style="padding: 30px 20px; border-top: 1px solid #e2e8f0; background: #fafafa;">
-          <p style="color: #2d3748; margin-bottom: 8px; font-size: 16px;"><strong>Best regards,</strong></p>
-          <p style="color: #2d3748; margin-bottom: 5px; font-weight: 600; font-size: 16px;">Amah Precious,</p>
-          <p style="color: #718096; font-size: 14px; margin-bottom: 5px;">Host & Student Success Coordinator</p>
-          <p style="color: #718096; font-size: 14px;">Tech Trailblazer Academy</p>
+        <div style="text-align:center;margin:26px 0;">
+          <a href="${groupInfo.link}" style="background:#16a34a;color:#fff;text-decoration:none;padding:13px 24px;border-radius:8px;font-size:15px;font-weight:700;display:inline-block;">
+            Join WhatsApp Group
+          </a>
         </div>
-        
-        <!-- Bottom Banner -->
-        <div style="text-align: center; padding: 20px 0; background: #ffffff;">
-          <img src="https://res.cloudinary.com/deafv5ovi/image/upload/v1777535098/Facebook_rp0eyf.jpg" alt="Tech Trailblazer Academy" style="width: 100%; max-width: 400px; max-height: 150px; height: auto; display: block; margin: 0 auto; border-radius: 8px; object-fit: cover;">
-        </div>
-        
-        <!-- Footer -->
-        <div style="text-align: center; padding: 25px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0;">
-          <p style="color: #718096; font-size: 12px; margin: 0;">Copyright &copy; 2026 Tech Trailblazer Academy. All rights reserved.</p>
-        </div>
-        
-      </div>
-    </body>
-    </html>
-  `;
-  }
+        <p style="margin:0;font-size:16px;line-height:1.7;color:#374151;">
+          Please join now so you do not miss orientation updates, first-week instructions, and live communication from the team.
+        </p>
+      `,
+    });
+  },
 };

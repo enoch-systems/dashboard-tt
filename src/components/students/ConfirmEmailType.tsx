@@ -8,6 +8,14 @@ interface ConfirmEmailTypeProps {
   emailType: string;
   studentName?: string;
   studentEmail?: string;
+  previewData?: {
+    courseName?: string;
+    paymentType?: string;
+    amountPaid?: number;
+    groupName?: string;
+    groupLink?: string;
+    startDate?: string;
+  };
 }
 
 export function ConfirmEmailType({ 
@@ -16,7 +24,8 @@ export function ConfirmEmailType({
   onConfirm, 
   emailType, 
   studentName, 
-  studentEmail 
+  studentEmail,
+  previewData,
 }: ConfirmEmailTypeProps) {
   const [isSending, setIsSending] = useState(false);
 
@@ -26,15 +35,15 @@ export function ConfirmEmailType({
     const configs = {
       welcome: {
         title: "Welcome Email",
-        description: "Send welcome message to new student"
+        description: "Professional onboarding email with kickoff details and personalized course-career context."
       },
       payment_confirmation: {
         title: "Payment Confirmation Email",
-        description: "Confirm payment received from student"
+        description: "Personalized payment receipt email based on selected payment type."
       },
       group_redirection: {
         title: "Group Redirection Email",
-        description: "Send WhatsApp group invitation to student"
+        description: "Course-based WhatsApp group invitation with direct join link."
       }
     };
 
@@ -87,6 +96,7 @@ export function ConfirmEmailType({
               <div className="text-sm text-gray-900 dark:text-white">
                 <p className="font-medium mb-1">Email Type:</p>
                 <p className="text-gray-600 dark:text-gray-300">{config.title}</p>
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{config.description}</p>
               </div>
             </div>
             
@@ -102,12 +112,35 @@ export function ConfirmEmailType({
               </div>
             </div>
 
+            {previewData?.courseName ? (
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
+                <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">Course</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{previewData.courseName}</p>
+              </div>
+            ) : null}
+
+            {emailType === "payment_confirmation" ? (
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
+                <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">Payment Confirmation Details</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Type: {previewData?.paymentType || "Fully Paid"}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Amount: N{Number(previewData?.amountPaid || 0).toLocaleString()}</p>
+              </div>
+            ) : null}
+
+            {emailType === "group_redirection" ? (
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
+                <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">Group Redirection Details</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Group: {previewData?.groupName || "General Group"}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 break-all mt-1">{previewData?.groupLink || "-"}</p>
+              </div>
+            ) : null}
+
             <div className="text-center py-4">
               <p className="text-gray-900 dark:text-white font-medium mb-2">
-                Are you sure you want to send this {config.title.toLowerCase()}?
+                You are about to send this {config.title.toLowerCase()}.
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                This action will send the email immediately.
+                Please review the details above. This action sends immediately.
               </p>
             </div>
           </div>
