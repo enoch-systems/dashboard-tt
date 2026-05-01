@@ -5,11 +5,13 @@ import { uploadImageToCloudinary } from '@/lib/cloudinary';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing required Supabase environment variables for payment receipts API.');
-}
+function createSupabaseAdmin() {
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return null;
+  }
 
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+  return createClient(supabaseUrl, supabaseServiceKey);
+}
 
 function normalizeEmail(value: string) {
   return value.trim().toLowerCase();
@@ -17,6 +19,14 @@ function normalizeEmail(value: string) {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabaseAdmin = createSupabaseAdmin();
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Missing required Supabase environment variables for payment receipts API.' },
+        { status: 500 }
+      );
+    }
+
     const formData = await request.formData();
     
     const name = formData.get('name') as string;
@@ -98,6 +108,14 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    const supabaseAdmin = createSupabaseAdmin();
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Missing required Supabase environment variables for payment receipts API.' },
+        { status: 500 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const limit = parseInt(searchParams.get('limit') || '50');

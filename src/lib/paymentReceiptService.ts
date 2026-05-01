@@ -1,13 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing required Supabase environment variables for payment receipt service.');
+const supabaseClient =
+  supabaseUrl && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null;
+
+function getSupabaseClient() {
+  if (!supabaseClient) {
+    console.error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY for payment receipt service.');
+    return null;
+  }
+  return supabaseClient;
 }
-
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 function getSupabaseErrorMessage(error: unknown) {
   if (!error || typeof error !== 'object') {
@@ -70,7 +77,12 @@ export async function fetchPaymentReceipts(
   offset: number = 0
 ): Promise<PaymentReceiptData[]> {
   try {
-    let query = supabaseAdmin
+    const client = getSupabaseClient();
+    if (!client) {
+      return [];
+    }
+
+    let query = client
       .from('payment_receipts')
       .select('*')
       .order('submitted_at', { ascending: false })
@@ -100,6 +112,11 @@ export async function updatePaymentReceiptStatus(
   notes?: string
 ): Promise<boolean> {
   try {
+    const client = getSupabaseClient();
+    if (!client) {
+      return false;
+    }
+
     const updateData: any = {
       status,
       reviewed_at: new Date().toISOString(),
@@ -109,7 +126,7 @@ export async function updatePaymentReceiptStatus(
       updateData.notes = notes;
     }
 
-    const { error } = await supabaseAdmin
+    const { error } = await client
       .from('payment_receipts')
       .update(updateData)
       .eq('id', id);
@@ -128,7 +145,12 @@ export async function updatePaymentReceiptStatus(
 
 export async function getPendingPaymentReceiptsCount(): Promise<number> {
   try {
-    const { count, error } = await supabaseAdmin
+    const client = getSupabaseClient();
+    if (!client) {
+      return 0;
+    }
+
+    const { count, error } = await client
       .from('payment_receipts')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'pending');
@@ -147,11 +169,16 @@ export async function getPendingPaymentReceiptsCount(): Promise<number> {
 
 export async function markReceiptAsViewed(receiptId: string, userId: string): Promise<boolean> {
   try {
+    const client = getSupabaseClient();
+    if (!client) {
+      return false;
+    }
+
     if (!receiptId || !userId) {
       return false;
     }
 
-    const { error } = await supabaseAdmin
+    const { error } = await client
       .from('viewed_payment_receipts')
       .insert({
         receipt_id: receiptId,
@@ -181,11 +208,16 @@ export async function markReceiptAsViewed(receiptId: string, userId: string): Pr
 
 export async function getViewedReceipts(userId: string): Promise<Set<string>> {
   try {
+    const client = getSupabaseClient();
+    if (!client) {
+      return new Set();
+    }
+
     if (!userId) {
       return new Set();
     }
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await client
       .from('viewed_payment_receipts')
       .select('receipt_id')
       .eq('user_id', userId);
